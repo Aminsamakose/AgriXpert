@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
-import { contactEmail, enquiryTypes, stockImages } from "@/lib/site-data";
+import ContactForm from "@/components/ContactForm";
+import { contactEmail, stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "Contact | AgriXpert",
@@ -37,66 +38,7 @@ export default function ContactPage() {
           </p>
         </div>
 
-        {/*
-          Static form for Phase 1. Submission handling (persisting enquiries,
-          routing buyer/farmer/partnership enquiries) is a Phase 2 item once
-          Supabase is wired up for this project.
-        */}
-        <form className="space-y-4 rounded-2xl border border-forest/10 bg-white p-6 shadow-sm">
-          <div>
-            <label className="text-sm font-medium text-forest-dark" htmlFor="name">Name</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
-              disabled
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-forest-dark" htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
-              disabled
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-forest-dark" htmlFor="enquiryType">Type of Enquiry</label>
-            <select
-              id="enquiryType"
-              name="enquiryType"
-              className="mt-1 w-full rounded-lg border border-forest/20 bg-white px-3 py-2 text-sm"
-              disabled
-              defaultValue={enquiryTypes[0]}
-            >
-              {enquiryTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-forest-dark" htmlFor="message">Message</label>
-            <textarea
-              id="message"
-              name="message"
-              rows={4}
-              className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
-              disabled
-            />
-          </div>
-          <button
-            type="button"
-            disabled
-            className="w-full rounded-full bg-forest/40 px-6 py-3 text-sm font-semibold text-natural-white"
-          >
-            Submit (coming in Phase 2)
-          </button>
-        </form>
+        <ContactForm />
       </section>
     </>
   );
