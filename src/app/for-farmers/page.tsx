@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import FarmerRegistrationForm from "@/components/FarmerRegistrationForm";
 import { farmerValueProps, stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
@@ -30,15 +31,12 @@ export default function ForFarmersPage() {
 
         <h2 className="mt-12 font-heading text-2xl font-bold text-forest">Registration</h2>
         <p className="mt-4 text-forest-dark/70">
-          The farmer registration form will be available through the Farmer Portal once Phase 2 (Farmer,
-          buyer and supplier registration) is built.
+          Register below to be considered for AgriXpert&apos;s production coordination, aggregation and
+          market access programmes. A member of our team will follow up to verify your details.
         </p>
-        <a
-          href="/portal"
-          className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-natural-white hover:bg-forest-dark"
-        >
-          Go to Farmer Portal
-        </a>
+        <div className="mt-6">
+          <FarmerRegistrationForm />
+        </div>
       </section>
     </>
   );

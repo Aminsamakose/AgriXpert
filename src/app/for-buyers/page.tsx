@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import BuyerRegistrationForm from "@/components/BuyerRegistrationForm";
 import { buyerValueProps, stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
@@ -27,15 +28,11 @@ export default function ForBuyersPage() {
 
         <h2 className="mt-12 font-heading text-2xl font-bold text-forest">Submit a Buyer Enquiry</h2>
         <p className="mt-4 text-forest-dark/70">
-          The buyer enquiry form will be wired up to capture commodity, quantity and quality requirements.
-          Until then, reach us directly via the contact page.
+          Tell us what you&apos;re sourcing and we&apos;ll connect you with available aggregated supply.
         </p>
-        <a
-          href="/contact"
-          className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-natural-white hover:bg-forest-dark"
-        >
-          Contact AgriXpert
-        </a>
+        <div className="mt-6">
+          <BuyerRegistrationForm />
+        </div>
       </section>
     </>
   );
