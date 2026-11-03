@@ -15,6 +15,38 @@ export const stockImages = {
     src: "https://images.unsplash.com/photo-1689268662934-24d1636904fc?fm=jpg&q=80&w=1600&auto=format&fit=crop",
     alt: "Sacks of aggregated commodity ready for market",
   },
+  teamMeeting: {
+    src: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A group of people in a professional meeting",
+  },
+  tractorField: {
+    src: "https://images.unsplash.com/photo-1717702576954-c07131c54169?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A tractor preparing land in a field at sunset",
+  },
+  cropFieldsAerial: {
+    src: "https://images.unsplash.com/photo-1757518417669-eaf434a7d877?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "Aerial view of agricultural fields with varied crops",
+  },
+  dataCharts: {
+    src: "https://images.unsplash.com/photo-1763038311036-6d18805537e5?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A person reviewing data charts and graphs on a laptop",
+  },
+  handshake: {
+    src: "https://images.unsplash.com/photo-1752159400890-d906038f1b35?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "Two business partners shaking hands in agreement",
+  },
+  conferenceTable: {
+    src: "https://images.unsplash.com/photo-1573167507387-6b4b98cb7c13?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "People at a conference table in discussion",
+  },
+  dataScreen: {
+    src: "https://images.unsplash.com/photo-1686061593213-98dad7c599b9?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A computer screen displaying data",
+  },
+  documentSigning: {
+    src: "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A hand signing a document with a pen",
+  },
 };
 
 export const navLinks = [
@@ -76,7 +108,7 @@ export const solutions = [
     number: "03",
     title: "Mechanisation & Farm Services",
     anchor: "mechanisation-farm-services",
-    body: "Tractor services, land preparation, planting, harvesting, irrigation and agricultural equipment coordination.",
+    body: "Tractor services, land preparation, land development, planting, harvesting, irrigation and agricultural equipment coordination.",
     cta: "Explore farm services",
   },
   {
@@ -216,10 +248,21 @@ export const footerColumns = [
   {
     heading: "Contact",
     links: [
-      // Placeholder contact details — replace with AgriXpert's own once confirmed.
-      { label: "info@agrixpert.com", href: "mailto:info@agrixpert.com" },
+      // Phone and address are still placeholders — replace once confirmed.
+      { label: "agrixpert@samakose.com", href: "mailto:agrixpert@samakose.com" },
       { label: "+233 (0) 00-000-0000", href: "/contact" },
       { label: "Tamale, Northern Ghana", href: "/contact" },
     ],
   },
 ];
+
+export const enquiryTypes = [
+  "General Enquiry",
+  "Farmer Registration & Partnership",
+  "Buyer / Commodity Sourcing",
+  "Partnership & Investment",
+  "Media & Press",
+  "Other",
+];
+
+export const contactEmail = "agrixpert@samakose.com";

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import { contactEmail, enquiryTypes, stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "Contact | AgriXpert",
@@ -8,14 +9,22 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <>
-      <PageHero eyebrow="Contact" title="Enquiries and business contacts" />
+      <PageHero
+        eyebrow="Contact"
+        title="Enquiries and business contacts"
+        image={stockImages.conferenceTable}
+      />
       <section className="mx-auto grid max-w-5xl gap-12 px-6 py-16 lg:grid-cols-2 lg:px-10">
         <div>
           <h2 className="font-heading text-xl font-bold text-forest">Get in Touch</h2>
           <dl className="mt-6 space-y-4 text-sm text-forest-dark/75">
             <div>
               <dt className="font-semibold text-forest-dark">Email</dt>
-              <dd>info@agrixpert.com</dd>
+              <dd>
+                <a href={`mailto:${contactEmail}`} className="hover:text-forest">
+                  {contactEmail}
+                </a>
+              </dd>
             </div>
             <div>
               <dt className="font-semibold text-forest-dark">Location</dt>
@@ -23,8 +32,8 @@ export default function ContactPage() {
             </div>
           </dl>
           <p className="mt-6 text-xs text-forest-dark/50">
-            Contact details above are placeholders. Replace with AgriXpert&apos;s confirmed office address,
-            phone number and email before launch.
+            Office address and phone number are pending confirmation. All enquiries submitted below, or
+            sent directly, are routed to {contactEmail}.
           </p>
         </div>
 
@@ -53,6 +62,22 @@ export default function ContactPage() {
               className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
               disabled
             />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-forest-dark" htmlFor="enquiryType">Type of Enquiry</label>
+            <select
+              id="enquiryType"
+              name="enquiryType"
+              className="mt-1 w-full rounded-lg border border-forest/20 bg-white px-3 py-2 text-sm"
+              disabled
+              defaultValue={enquiryTypes[0]}
+            >
+              {enquiryTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="text-sm font-medium text-forest-dark" htmlFor="message">Message</label>

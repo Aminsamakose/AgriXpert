@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
-import { valueChains } from "@/lib/site-data";
+import { valueChains, stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "Value Chains | AgriXpert",
@@ -13,6 +13,7 @@ export default function ValueChainsPage() {
       <PageHero
         eyebrow="Value Chains"
         title="Maize, soybeans, rice, groundnuts and other commodities"
+        image={stockImages.cropFieldsAerial}
       />
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import { stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "Farmer / Buyer Portal | AgriXpert",
@@ -12,6 +13,7 @@ export default function PortalPage() {
         eyebrow="Portal"
         title="Farmer / Buyer Portal"
         description="Separate login and registration experience for farmers, buyers and suppliers."
+        image={stockImages.dataScreen}
       />
       <section className="mx-auto max-w-3xl px-6 py-20 text-center lg:px-10">
         <p className="text-forest-dark/70">

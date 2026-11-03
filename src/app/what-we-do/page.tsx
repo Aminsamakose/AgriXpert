@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
-import { solutions } from "@/lib/site-data";
+import { solutions, stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "What We Do | AgriXpert",
@@ -12,6 +12,7 @@ export default function WhatWeDoPage() {
       <PageHero
         eyebrow="What We Do"
         title="Production, aggregation, mechanisation and supply chain solutions"
+        image={stockImages.tractorField}
       />
       <section className="mx-auto max-w-5xl space-y-16 px-6 py-16 lg:px-10">
         {solutions.map((s) => (

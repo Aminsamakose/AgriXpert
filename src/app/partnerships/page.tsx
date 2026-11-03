@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import { stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "Partnerships | AgriXpert",
@@ -17,6 +18,7 @@ export default function PartnershipsPage() {
       <PageHero
         eyebrow="Partnerships"
         title="Institutional, commercial and investment partnerships"
+        image={stockImages.handshake}
       />
       <section className="mx-auto max-w-5xl px-6 py-16 lg:px-10">
         <div className="grid gap-6 sm:grid-cols-3">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import { stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "About Us | AgriXpert",
@@ -12,6 +13,7 @@ export default function AboutPage() {
         eyebrow="About Us"
         title="Company profile, vision, mission and leadership"
         description="AgriXpert is a market-led agricultural value-chain integration company working to build commercially sustainable supply chains by coordinating farmers, production, aggregation, mechanisation, processing, logistics and market access."
+        image={stockImages.teamMeeting}
       />
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-10">
         <div id="story" className="space-y-4">

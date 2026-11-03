@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
-import { valueChains } from "@/lib/site-data";
+import { valueChains, stockImages } from "@/lib/site-data";
 
 export function generateStaticParams() {
   return valueChains.map((vc) => ({ slug: vc.slug }));
@@ -31,7 +31,12 @@ export default async function ValueChainPage({
 
   return (
     <>
-      <PageHero eyebrow="Value Chain" title={commodity.name} description={commodity.body} />
+      <PageHero
+        eyebrow="Value Chain"
+        title={commodity.name}
+        description={commodity.body}
+        image={stockImages.cropFieldsAerial}
+      />
       <section className="mx-auto max-w-4xl space-y-12 px-6 py-16 lg:px-10">
         {templateSections.map((section) => (
           <div key={section.title} className="border-t border-forest/10 pt-8 first:border-t-0 first:pt-0">

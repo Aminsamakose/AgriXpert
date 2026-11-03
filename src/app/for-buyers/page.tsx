@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
-import { buyerValueProps } from "@/lib/site-data";
+import { buyerValueProps, stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
   title: "For Buyers | AgriXpert",
@@ -12,6 +12,7 @@ export default function ForBuyersPage() {
       <PageHero
         eyebrow="For Buyers"
         title="Commodity sourcing, procurement and supply agreements"
+        image={stockImages.aggregationBags}
       />
       <section className="mx-auto max-w-5xl px-6 py-16 lg:px-10">
         <h2 className="font-heading text-2xl font-bold text-forest">What You Can Do</h2>
