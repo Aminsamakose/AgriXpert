@@ -17,9 +17,20 @@ export default function PortalPage() {
       />
       <section className="mx-auto max-w-3xl px-6 py-20 text-center lg:px-10">
         <p className="text-forest-dark/70">
-          The Farmer / Buyer Portal is a Phase 2 deliverable (registration) and Phase 4 deliverable
-          (dashboards) in the implementation roadmap. Authentication and role-based dashboards will be
-          built on Supabase once that phase begins.
+          Farmer, buyer and supplier registration is now open — see{" "}
+          <a href="/for-farmers" className="font-semibold text-forest hover:text-forest-dark">
+            For Farmers
+          </a>
+          ,{" "}
+          <a href="/for-buyers" className="font-semibold text-forest hover:text-forest-dark">
+            For Buyers
+          </a>{" "}
+          and{" "}
+          <a href="/partnerships" className="font-semibold text-forest hover:text-forest-dark">
+            Partnerships
+          </a>
+          . A dedicated login and role-based dashboard experience, where registered farmers, buyers and
+          suppliers can track their records directly, is a later phase in the implementation roadmap.
         </p>
       </section>
     </>

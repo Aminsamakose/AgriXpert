@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import SupplierRegistrationForm from "@/components/SupplierRegistrationForm";
 import { stockImages } from "@/lib/site-data";
 
 export const metadata: Metadata = {
@@ -35,6 +36,17 @@ export default function PartnershipsPage() {
         >
           Start a Partnership Conversation
         </a>
+
+        <h2 className="mt-16 font-heading text-2xl font-bold text-forest">
+          Register as a Supplier Partner
+        </h2>
+        <p className="mt-4 text-forest-dark/70">
+          Mechanisation, input, logistics, storage and processing-equipment providers can register
+          below to be considered as AgriXpert supplier partners.
+        </p>
+        <div className="mt-6">
+          <SupplierRegistrationForm />
+        </div>
       </section>
     </>
   );
