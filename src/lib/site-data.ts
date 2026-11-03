@@ -1,3 +1,22 @@
+// Stock photography sourced from Unsplash (free to use under the Unsplash
+// License). Hotlinked via next/image remotePatterns rather than stored
+// locally. Replace with AgriXpert's own photography when available —
+// these are placeholders, not AgriXpert's actual farmers, fields or sites.
+export const stockImages = {
+  heroField: {
+    src: "https://images.unsplash.com/photo-1704270269033-9600fcc6d0d7?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A farmer standing in a cornfield",
+  },
+  farmerField: {
+    src: "https://images.unsplash.com/photo-1647463121865-696ca458e9d5?fm=jpg&q=80&w=1600&auto=format&fit=crop",
+    alt: "A farmer standing in a cornfield",
+  },
+  aggregationBags: {
+    src: "https://images.unsplash.com/photo-1689268662934-24d1636904fc?fm=jpg&q=80&w=1600&auto=format&fit=crop",
+    alt: "Sacks of aggregated commodity ready for market",
+  },
+};
+
 export const navLinks = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   problems,
@@ -9,6 +10,7 @@ import {
   buyerValueProps,
   digitalCapabilities,
   impactIndicators,
+  stockImages,
 } from "@/lib/site-data";
 
 function SectionHeading({
@@ -45,6 +47,19 @@ export default function Home() {
     <>
       {/* Section 1: Hero */}
       <section className="relative overflow-hidden bg-forest text-natural-white">
+        <Image
+          src={stockImages.heroField.src}
+          alt={stockImages.heroField.alt}
+          fill
+          priority
+          sizes="100vw"
+          className="absolute inset-0 -z-20 object-cover"
+        />
+        {/* Forest-tinted scrim so hero copy stays legible over the photo */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-gradient-to-r from-forest-dark/95 via-forest-dark/80 to-forest-dark/40"
+        />
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
           <div className="max-w-3xl">
             <h1 className="font-heading text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
@@ -78,11 +93,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        {/* Decorative gradient in place of hero photography — replace with real agricultural imagery */}
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-br from-forest via-forest-dark to-forest"
-        />
       </section>
 
       {/* Section 2: The problem */}
@@ -202,14 +212,30 @@ export default function Home() {
               Register as a Farmer Partner
             </Link>
           </div>
-          <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-agri-green/40 to-forest/40" aria-hidden />
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+            <Image
+              src={stockImages.farmerField.src}
+              alt={stockImages.farmerField.alt}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </div>
         </div>
       </section>
 
       {/* Section 8: For buyers */}
       <section className="bg-natural-white py-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-10 grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="order-2 aspect-[4/3] rounded-2xl bg-gradient-to-br from-harvest-gold/40 to-forest/30 lg:order-1" aria-hidden />
+          <div className="relative order-2 aspect-[4/3] overflow-hidden rounded-2xl lg:order-1">
+            <Image
+              src={stockImages.aggregationBags.src}
+              alt={stockImages.aggregationBags.alt}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </div>
           <div className="order-1 lg:order-2">
             <SectionHeading eyebrow="For Buyers" title="Source Quality Agricultural Commodities with Confidence." />
             <ul className="mt-8 space-y-3">
