@@ -46,7 +46,7 @@ export default function Home() {
   return (
     <>
       {/* Section 1: Hero */}
-      <section className="relative overflow-hidden bg-forest text-natural-white">
+      <section className="relative isolate overflow-hidden bg-forest text-natural-white">
         <Image
           src={stockImages.heroField.src}
           alt={stockImages.heroField.alt}
