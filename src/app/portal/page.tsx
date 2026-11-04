@@ -221,11 +221,22 @@ export default function PortalPage() {
       <PageHero
         eyebrow="Portal"
         title="Farmer / Buyer Portal"
-        description="Sign in to track and update your registration with AgriXpert."
+        description="Sign in to track and update your registration with AgriXpert. For farmers registered under a cooperative or group, your group affiliation is shown alongside your status."
         image={stockImages.dataScreen}
       />
       <section className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
-        <p className="text-forest-dark/70">
+        <div className="rounded-2xl border border-agri-green/20 bg-agri-green/5 p-5">
+          <p className="text-sm font-semibold text-forest">Beyond individual status tracking</p>
+          <p className="mt-2 text-sm text-forest-dark/70">
+            AgriXpert coordinates more than farmer-to-buyer transactions. Equipment and service
+            providers, processors and financial partners register here too, as part of one
+            coordinated network rather than isolated listings. We are also building toward
+            group-level visibility for cooperatives, and linking registration to the business
+            strengthening support AgriXpert and its partners provide, so that registering here is a
+            step toward a more investment-ready enterprise, not only a status update.
+          </p>
+        </div>
+        <p className="mt-6 text-forest-dark/70">
           Not registered yet? See{" "}
           <a href="/for-farmers" className="font-semibold text-forest hover:text-forest-dark">
             For Farmers
@@ -375,6 +386,11 @@ function FarmerCard({
               {record.location ? ` · ${record.location}` : ""}
               {record.farm_size_hectares != null ? ` · ${record.farm_size_hectares} ha` : ""}
             </p>
+            {record.cooperative_or_group && (
+              <span className="mt-2 inline-flex items-center rounded-full bg-forest/10 px-3 py-1 text-xs font-semibold text-forest">
+                Group: {record.cooperative_or_group}
+              </span>
+            )}
           </div>
           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(record.status)}`}>
             {record.status}
