@@ -277,6 +277,7 @@ export const footerColumns = [
       { label: "Soybeans", href: "/value-chains/soybeans" },
       { label: "Rice", href: "/value-chains/rice" },
       { label: "Groundnuts", href: "/value-chains/groundnuts" },
+      { label: "Vegetables", href: "/value-chains/vegetables" },
     ],
   },
   {
