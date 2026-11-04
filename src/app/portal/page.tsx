@@ -4,13 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import PageHero from "@/components/PageHero";
 import EmailMagicLinkForm from "@/components/EmailMagicLinkForm";
 import { supabase } from "@/lib/supabase";
-import { stockImages } from "@/lib/site-data";
+import { stockImages, valueChains } from "@/lib/site-data";
 
 type FarmerRecord = {
   id: string;
   created_at: string;
   full_name: string;
+  phone: string;
+  location: string | null;
+  farm_size_hectares: number | null;
   commodities: string[];
+  cooperative_or_group: string | null;
   status: string;
 };
 
@@ -18,7 +22,11 @@ type BuyerRecord = {
   id: string;
   created_at: string;
   company_name: string;
+  contact_name: string;
+  phone: string | null;
   commodities_needed: string[];
+  quantity_required: string | null;
+  quality_requirements: string | null;
   status: string;
 };
 
@@ -26,9 +34,21 @@ type SupplierRecord = {
   id: string;
   created_at: string;
   company_name: string;
+  contact_name: string;
+  phone: string | null;
   services: string[];
   status: string;
 };
+
+const supplierServiceCategories = [
+  "Mechanisation & Farm Equipment",
+  "Input Supply (seeds, fertiliser, agrochemicals)",
+  "Logistics & Transportation",
+  "Storage & Warehousing",
+  "Processing Equipment & Technology",
+  "Financial Services",
+  "Other",
+];
 
 function statusBadge(status: string) {
   const colors: Record<string, string> = {
@@ -40,6 +60,38 @@ function statusBadge(status: string) {
   return colors[status] ?? "bg-forest-dark/10 text-forest-dark/60";
 }
 
+function CommodityToggle({
+  options,
+  selected,
+  onToggle,
+  activeClass,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (name: string) => void;
+  activeClass: string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const isOn = selected.includes(opt);
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onToggle(opt)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+              isOn ? activeClass : "bg-forest-dark/5 text-forest-dark/50 hover:bg-forest-dark/10"
+            }`}
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function PortalPage() {
   const [authState, setAuthState] = useState<"checking" | "signedOut" | "signedIn">("checking");
   const [email, setEmail] = useState<string | null>(null);
@@ -47,6 +99,9 @@ export default function PortalPage() {
   const [buyerRecords, setBuyerRecords] = useState<BuyerRecord[]>([]);
   const [supplierRecords, setSupplierRecords] = useState<SupplierRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingSection, setEditingSection] = useState<"farmer" | "buyer" | "supplier" | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const checkSession = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
@@ -70,9 +125,13 @@ export default function PortalPage() {
   const loadRecords = useCallback(async () => {
     setLoading(true);
     const [farmers, buyers, suppliers] = await Promise.all([
-      supabase.from("farmers").select("id, created_at, full_name, commodities, status"),
-      supabase.from("buyers").select("id, created_at, company_name, commodities_needed, status"),
-      supabase.from("suppliers").select("id, created_at, company_name, services, status"),
+      supabase
+        .from("farmers")
+        .select("id, created_at, full_name, phone, location, farm_size_hectares, commodities, cooperative_or_group, status"),
+      supabase
+        .from("buyers")
+        .select("id, created_at, company_name, contact_name, phone, commodities_needed, quantity_required, quality_requirements, status"),
+      supabase.from("suppliers").select("id, created_at, company_name, contact_name, phone, services, status"),
     ]);
     setFarmerRecords((farmers.data as FarmerRecord[]) ?? []);
     setBuyerRecords((buyers.data as BuyerRecord[]) ?? []);
@@ -95,6 +154,66 @@ export default function PortalPage() {
     setSupplierRecords([]);
   }
 
+  async function saveFarmer(form: HTMLFormElement, commodities: string[]) {
+    setSaving(true);
+    setSaveError(null);
+    const fd = new FormData(form);
+    const farmSizeRaw = String(fd.get("farmSize") ?? "").trim();
+    const { error } = await supabase.rpc("update_own_farmer", {
+      p_full_name: String(fd.get("fullName") ?? ""),
+      p_phone: String(fd.get("phone") ?? ""),
+      p_location: String(fd.get("location") ?? ""),
+      p_farm_size_hectares: farmSizeRaw ? Number(farmSizeRaw) : null,
+      p_commodities: commodities,
+      p_cooperative_or_group: String(fd.get("cooperative") ?? ""),
+    });
+    setSaving(false);
+    if (error) {
+      setSaveError(error.message);
+      return;
+    }
+    setEditingSection(null);
+    loadRecords();
+  }
+
+  async function saveBuyer(form: HTMLFormElement, commodities: string[]) {
+    setSaving(true);
+    setSaveError(null);
+    const fd = new FormData(form);
+    const { error } = await supabase.rpc("update_own_buyer", {
+      p_contact_name: String(fd.get("contactName") ?? ""),
+      p_phone: String(fd.get("phone") ?? ""),
+      p_commodities_needed: commodities,
+      p_quantity_required: String(fd.get("quantityRequired") ?? ""),
+      p_quality_requirements: String(fd.get("qualityRequirements") ?? ""),
+    });
+    setSaving(false);
+    if (error) {
+      setSaveError(error.message);
+      return;
+    }
+    setEditingSection(null);
+    loadRecords();
+  }
+
+  async function saveSupplier(form: HTMLFormElement, services: string[]) {
+    setSaving(true);
+    setSaveError(null);
+    const fd = new FormData(form);
+    const { error } = await supabase.rpc("update_own_supplier", {
+      p_contact_name: String(fd.get("contactName") ?? ""),
+      p_phone: String(fd.get("phone") ?? ""),
+      p_services: services,
+    });
+    setSaving(false);
+    if (error) {
+      setSaveError(error.message);
+      return;
+    }
+    setEditingSection(null);
+    loadRecords();
+  }
+
   const hasAnyRecord = farmerRecords.length + buyerRecords.length + supplierRecords.length > 0;
 
   return (
@@ -102,7 +221,7 @@ export default function PortalPage() {
       <PageHero
         eyebrow="Portal"
         title="Farmer / Buyer Portal"
-        description="Sign in to track your registration and the status of your submissions with AgriXpert."
+        description="Sign in to track and update your registration with AgriXpert."
         image={stockImages.dataScreen}
       />
       <section className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
@@ -120,7 +239,7 @@ export default function PortalPage() {
             Partnerships
           </a>{" "}
           to submit your details first. Once registered, sign in below with the same email to track
-          your status.
+          and update your status.
         </p>
 
         <div className="mt-8">
@@ -163,78 +282,427 @@ export default function PortalPage() {
                 </p>
               )}
 
-              {!loading && farmerRecords.length > 0 && (
-                <div className="mt-6">
-                  <h2 className="font-heading text-lg font-bold text-forest">Farmer Registration</h2>
-                  {farmerRecords.map((r) => (
-                    <div key={r.id} className="mt-3 rounded-2xl border border-forest/10 bg-white p-5">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="font-semibold text-forest-dark">{r.full_name}</p>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(r.status)}`}>
-                          {r.status}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                        {r.commodities.map((c) => (
-                          <span key={c} className="rounded-full bg-agri-green/10 px-3 py-1 text-agri-green">
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {!loading &&
+                farmerRecords.map((r) => (
+                  <FarmerCard
+                    key={`${r.id}-${editingSection === "farmer"}`}
+                    record={r}
+                    editing={editingSection === "farmer"}
+                    saving={saving}
+                    saveError={editingSection === "farmer" ? saveError : null}
+                    onEdit={() => {
+                      setSaveError(null);
+                      setEditingSection("farmer");
+                    }}
+                    onCancel={() => setEditingSection(null)}
+                    onSave={saveFarmer}
+                  />
+                ))}
 
-              {!loading && buyerRecords.length > 0 && (
-                <div className="mt-6">
-                  <h2 className="font-heading text-lg font-bold text-forest">Buyer Sourcing Requests</h2>
-                  {buyerRecords.map((r) => (
-                    <div key={r.id} className="mt-3 rounded-2xl border border-forest/10 bg-white p-5">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="font-semibold text-forest-dark">{r.company_name}</p>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(r.status)}`}>
-                          {r.status}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                        {r.commodities_needed.map((c) => (
-                          <span key={c} className="rounded-full bg-harvest-gold/10 px-3 py-1 text-harvest-gold">
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {!loading &&
+                buyerRecords.map((r) => (
+                  <BuyerCard
+                    key={`${r.id}-${editingSection === "buyer"}`}
+                    record={r}
+                    editing={editingSection === "buyer"}
+                    saving={saving}
+                    saveError={editingSection === "buyer" ? saveError : null}
+                    onEdit={() => {
+                      setSaveError(null);
+                      setEditingSection("buyer");
+                    }}
+                    onCancel={() => setEditingSection(null)}
+                    onSave={saveBuyer}
+                  />
+                ))}
 
-              {!loading && supplierRecords.length > 0 && (
-                <div className="mt-6">
-                  <h2 className="font-heading text-lg font-bold text-forest">Supplier Registration</h2>
-                  {supplierRecords.map((r) => (
-                    <div key={r.id} className="mt-3 rounded-2xl border border-forest/10 bg-white p-5">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <p className="font-semibold text-forest-dark">{r.company_name}</p>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(r.status)}`}>
-                          {r.status}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                        {r.services.map((s) => (
-                          <span key={s} className="rounded-full bg-agri-green/10 px-3 py-1 text-agri-green">
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {!loading &&
+                supplierRecords.map((r) => (
+                  <SupplierCard
+                    key={`${r.id}-${editingSection === "supplier"}`}
+                    record={r}
+                    editing={editingSection === "supplier"}
+                    saving={saving}
+                    saveError={editingSection === "supplier" ? saveError : null}
+                    onEdit={() => {
+                      setSaveError(null);
+                      setEditingSection("supplier");
+                    }}
+                    onCancel={() => setEditingSection(null)}
+                    onSave={saveSupplier}
+                  />
+                ))}
             </div>
           )}
         </div>
       </section>
     </>
+  );
+}
+
+function FarmerCard({
+  record,
+  editing,
+  saving,
+  saveError,
+  onEdit,
+  onCancel,
+  onSave,
+}: {
+  record: FarmerRecord;
+  editing: boolean;
+  saving: boolean;
+  saveError: string | null;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: (form: HTMLFormElement, commodities: string[]) => void;
+}) {
+  const [commodities, setCommodities] = useState<string[]>(record.commodities);
+
+  function toggle(name: string) {
+    setCommodities((prev) => (prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]));
+  }
+
+  if (!editing) {
+    return (
+      <div className="mt-6 rounded-2xl border border-forest/10 bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-heading text-lg font-bold text-forest">Farmer Registration</h2>
+            <p className="mt-1 font-semibold text-forest-dark">{record.full_name}</p>
+            <p className="text-xs text-forest-dark/60">
+              {record.phone}
+              {record.location ? ` · ${record.location}` : ""}
+              {record.farm_size_hectares != null ? ` · ${record.farm_size_hectares} ha` : ""}
+            </p>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(record.status)}`}>
+            {record.status}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+          {record.commodities.map((c) => (
+            <span key={c} className="rounded-full bg-agri-green/10 px-3 py-1 text-agri-green">
+              {c}
+            </span>
+          ))}
+        </div>
+        <button
+          onClick={onEdit}
+          className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Edit Details
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSave(e.currentTarget, commodities);
+      }}
+      className="mt-6 space-y-4 rounded-2xl border border-forest/10 bg-white p-5"
+    >
+      <h2 className="font-heading text-lg font-bold text-forest">Edit Farmer Registration</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Full Name</label>
+          <input name="fullName" defaultValue={record.full_name} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Phone</label>
+          <input name="phone" defaultValue={record.phone} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Location</label>
+          <input name="location" defaultValue={record.location ?? ""} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Farm Size (ha)</label>
+          <input
+            name="farmSize"
+            type="number"
+            min="0"
+            step="0.1"
+            defaultValue={record.farm_size_hectares ?? ""}
+            className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="text-sm font-medium text-forest-dark">Cooperative / Farmer Group</label>
+          <input
+            name="cooperative"
+            defaultValue={record.cooperative_or_group ?? ""}
+            className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          />
+        </div>
+      </div>
+      <div>
+        <span className="text-sm font-medium text-forest-dark">Commodities</span>
+        <div className="mt-2">
+          <CommodityToggle
+            options={valueChains.map((v) => v.name)}
+            selected={commodities}
+            onToggle={toggle}
+            activeClass="bg-agri-green/20 text-agri-green"
+          />
+        </div>
+      </div>
+      {saveError && <p className="text-sm font-medium text-red-600">{saveError}</p>}
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-natural-white hover:bg-forest-dark disabled:cursor-not-allowed disabled:bg-forest/40"
+        >
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full border border-forest/20 px-5 py-2.5 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function BuyerCard({
+  record,
+  editing,
+  saving,
+  saveError,
+  onEdit,
+  onCancel,
+  onSave,
+}: {
+  record: BuyerRecord;
+  editing: boolean;
+  saving: boolean;
+  saveError: string | null;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: (form: HTMLFormElement, commodities: string[]) => void;
+}) {
+  const [commodities, setCommodities] = useState<string[]>(record.commodities_needed);
+
+  function toggle(name: string) {
+    setCommodities((prev) => (prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]));
+  }
+
+  if (!editing) {
+    return (
+      <div className="mt-6 rounded-2xl border border-forest/10 bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-heading text-lg font-bold text-forest">Buyer Sourcing Request</h2>
+            <p className="mt-1 font-semibold text-forest-dark">{record.company_name}</p>
+            <p className="text-xs text-forest-dark/60">
+              {record.contact_name}
+              {record.phone ? ` · ${record.phone}` : ""}
+            </p>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(record.status)}`}>
+            {record.status}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+          {record.commodities_needed.map((c) => (
+            <span key={c} className="rounded-full bg-harvest-gold/10 px-3 py-1 text-harvest-gold">
+              {c}
+            </span>
+          ))}
+        </div>
+        {(record.quantity_required || record.quality_requirements) && (
+          <p className="mt-2 text-sm text-forest-dark/70">
+            {record.quantity_required && <span>Qty: {record.quantity_required}. </span>}
+            {record.quality_requirements && <span>Quality: {record.quality_requirements}</span>}
+          </p>
+        )}
+        <button
+          onClick={onEdit}
+          className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Edit Details
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSave(e.currentTarget, commodities);
+      }}
+      className="mt-6 space-y-4 rounded-2xl border border-forest/10 bg-white p-5"
+    >
+      <h2 className="font-heading text-lg font-bold text-forest">Edit Buyer Sourcing Request</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Contact Person</label>
+          <input name="contactName" defaultValue={record.contact_name} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Phone</label>
+          <input name="phone" defaultValue={record.phone ?? ""} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Quantity Required</label>
+          <input
+            name="quantityRequired"
+            defaultValue={record.quantity_required ?? ""}
+            className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Quality Requirements</label>
+          <input
+            name="qualityRequirements"
+            defaultValue={record.quality_requirements ?? ""}
+            className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          />
+        </div>
+      </div>
+      <div>
+        <span className="text-sm font-medium text-forest-dark">Commodities Needed</span>
+        <div className="mt-2">
+          <CommodityToggle
+            options={valueChains.map((v) => v.name)}
+            selected={commodities}
+            onToggle={toggle}
+            activeClass="bg-harvest-gold/20 text-harvest-gold"
+          />
+        </div>
+      </div>
+      {saveError && <p className="text-sm font-medium text-red-600">{saveError}</p>}
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-natural-white hover:bg-forest-dark disabled:cursor-not-allowed disabled:bg-forest/40"
+        >
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full border border-forest/20 px-5 py-2.5 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SupplierCard({
+  record,
+  editing,
+  saving,
+  saveError,
+  onEdit,
+  onCancel,
+  onSave,
+}: {
+  record: SupplierRecord;
+  editing: boolean;
+  saving: boolean;
+  saveError: string | null;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: (form: HTMLFormElement, services: string[]) => void;
+}) {
+  const [services, setServices] = useState<string[]>(record.services);
+
+  function toggle(name: string) {
+    setServices((prev) => (prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name]));
+  }
+
+  if (!editing) {
+    return (
+      <div className="mt-6 rounded-2xl border border-forest/10 bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-heading text-lg font-bold text-forest">Supplier Registration</h2>
+            <p className="mt-1 font-semibold text-forest-dark">{record.company_name}</p>
+            <p className="text-xs text-forest-dark/60">
+              {record.contact_name}
+              {record.phone ? ` · ${record.phone}` : ""}
+            </p>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(record.status)}`}>
+            {record.status}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+          {record.services.map((s) => (
+            <span key={s} className="rounded-full bg-agri-green/10 px-3 py-1 text-agri-green">
+              {s}
+            </span>
+          ))}
+        </div>
+        <button
+          onClick={onEdit}
+          className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Edit Details
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSave(e.currentTarget, services);
+      }}
+      className="mt-6 space-y-4 rounded-2xl border border-forest/10 bg-white p-5"
+    >
+      <h2 className="font-heading text-lg font-bold text-forest">Edit Supplier Registration</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Contact Person</label>
+          <input name="contactName" defaultValue={record.contact_name} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Phone</label>
+          <input name="phone" defaultValue={record.phone ?? ""} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <div>
+        <span className="text-sm font-medium text-forest-dark">Services You Provide</span>
+        <div className="mt-2">
+          <CommodityToggle
+            options={supplierServiceCategories}
+            selected={services}
+            onToggle={toggle}
+            activeClass="bg-agri-green/20 text-agri-green"
+          />
+        </div>
+      </div>
+      {saveError && <p className="text-sm font-medium text-red-600">{saveError}</p>}
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-natural-white hover:bg-forest-dark disabled:cursor-not-allowed disabled:bg-forest/40"
+        >
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full border border-forest/20 px-5 py-2.5 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
