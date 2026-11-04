@@ -71,6 +71,10 @@ export const stockImages = {
     src: "https://images.unsplash.com/photo-1549978113-29eb25c8177f?fm=jpg&q=80&w=2400&auto=format&fit=crop",
     alt: "Close-up of a pile of unshelled groundnuts",
   },
+  vegetableHarvest: {
+    src: "https://images.unsplash.com/photo-1671528443617-26b1ecebb66f?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A close-up pile of freshly harvested ripe tomatoes",
+  },
 };
 
 export const navLinks = [
@@ -176,6 +180,7 @@ export const valueChains = [
   { name: "Soybeans", slug: "soybeans", body: "Feed manufacturing, oil processing and industrial markets." },
   { name: "Rice", slug: "rice", body: "Production, aggregation, milling and institutional supply." },
   { name: "Groundnuts", slug: "groundnuts", body: "Food processing, oil production and commodity trade." },
+  { name: "Vegetables", slug: "vegetables", body: "Fresh produce sourcing and structured supply." },
 ];
 
 export const businessModelSteps = [

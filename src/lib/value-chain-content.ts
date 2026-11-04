@@ -6,7 +6,7 @@ export type ValueChainContent = {
   slug: string;
   name: string;
   tagline: string;
-  heroImageKey: "maizeHarvest" | "soybeanField" | "ricePaddy" | "groundnutsPile";
+  heroImageKey: "maizeHarvest" | "soybeanField" | "ricePaddy" | "groundnutsPile" | "vegetableHarvest";
   overview: {
     intro: string;
     paragraphs: string[];
@@ -478,4 +478,124 @@ export const valueChainContent: Record<string, ValueChainContent> = {
     },
   },
 
+  vegetables: {
+    slug: "vegetables",
+    name: "Vegetables",
+    tagline: "Growing Fresh Produce. Connecting Farmers to Markets. Reducing Supply Gaps.",
+    heroImageKey: "vegetableHarvest",
+    overview: {
+      intro: "Building a More Reliable Fresh Produce Supply Chain",
+      paragraphs: [
+        "Vegetables are essential to food security, nutrition, household consumption and commercial food distribution. From tomatoes, onions and peppers to leafy vegetables and other horticultural products, the vegetable industry supports farmers, traders, wholesalers, retailers, restaurants, food processors and institutional buyers.",
+        "However, vegetable markets are highly sensitive to seasonality, perishability, inconsistent supply, post-harvest losses and price fluctuations. Farmers may produce without having dependable buyers, while commercial buyers may struggle to secure consistent volumes of quality produce when needed.",
+        "AgriXpert seeks to bridge this gap by developing a more coordinated, market-led vegetable supply chain. We aim to connect vegetable farmers to commercial markets through production planning, aggregation, quality management, storage coordination and structured supply arrangements. Our ambition is to move beyond fragmented production towards a more predictable and commercially responsive fresh produce system.",
+      ],
+    },
+    sourcing: {
+      intro: "AgriXpert intends to establish sourcing relationships with vegetable farmers and producer groups in suitable production communities.",
+      factors: [
+        "Availability of suitable land and water.",
+        "Irrigation and dry-season production opportunities.",
+        "Proximity to major consumption centres.",
+        "Farmer production capacity.",
+        "Seasonal supply patterns.",
+        "Access to aggregation and handling facilities.",
+        "Transportation and market connectivity.",
+      ],
+      note: "Priority crops may include tomatoes, onions, pepper, cabbage, okra, garden eggs, leafy vegetables and other commercially demanded horticultural crops. Specific sourcing locations will be confirmed through production assessments and buyer demand analysis.",
+    },
+    farmerNetwork: {
+      intro: "A dependable vegetable supply chain requires close coordination between farmers, input suppliers, aggregators, transporters and buyers. AgriXpert seeks to build a network of:",
+      groups: [
+        "Smallholder vegetable farmers.",
+        "Commercial horticultural producers.",
+        "Irrigation-based farmer groups.",
+        "Farmer cooperatives.",
+        "Agricultural input suppliers.",
+        "Mechanisation and irrigation service providers.",
+        "Produce aggregators.",
+        "Wholesale and institutional buyers.",
+      ],
+      closing: "Our goal is to build relationships that connect production decisions to actual market requirements.",
+    },
+    coordination: {
+      intro: "Vegetable production must be coordinated around crop cycles, seasonal demand, water availability and market requirements. AgriXpert aims to support farmers through:",
+      items: [
+        "Market-informed production planning.",
+        "Crop selection based on buyer demand.",
+        "Access to suitable seeds and agricultural inputs.",
+        "Irrigation and mechanisation service coordination.",
+        "Good agricultural practices.",
+        "Integrated pest management guidance.",
+        "Production monitoring.",
+        "Harvest scheduling.",
+        "Coordination of anticipated market volumes.",
+      ],
+      closing: "Our approach seeks to reduce mismatches between production and market demand while improving the consistency of fresh produce supply.",
+    },
+    aggregation: {
+      intro: "Vegetables are highly perishable, making timely harvesting, handling and transportation essential. AgriXpert seeks to coordinate a supply system that reduces delays between harvesting and delivery.",
+      items: [
+        "Farmer-level produce collection.",
+        "Sorting and grading.",
+        "Quality inspection.",
+        "Appropriate packaging and handling.",
+        "Temporary storage and cooling partnerships where feasible.",
+        "Inventory and order management.",
+        "Transportation coordination.",
+        "Timely delivery to buyers.",
+      ],
+      closing: "The emphasis is on reducing avoidable post-harvest losses while maintaining freshness and product quality.",
+    },
+    quality: {
+      intro: "Fresh produce quality depends on the commodity, intended market and buyer requirements. Our quality management approach will consider:",
+      groups: [
+        {
+          items: [
+            "Freshness and maturity.",
+            "Size and uniformity.",
+            "Colour and appearance.",
+            "Physical damage.",
+            "Pest and disease damage.",
+            "Cleanliness.",
+            "Safe handling and packaging.",
+            "Pesticide residue compliance.",
+            "Traceability and food safety requirements.",
+          ],
+        },
+      ],
+      closing: "Specifications will be agreed with buyers and aligned with applicable food safety standards.",
+    },
+    markets: {
+      intro: "Vegetables offer opportunities across fresh produce distribution and agro-processing.",
+      items: [
+        { label: "Wholesale markets", body: "Supplying wholesalers and produce distributors." },
+        { label: "Retail markets", body: "Supplying supermarkets, shops and fresh produce retailers." },
+        { label: "Hospitality and food services", body: "Supplying hotels, restaurants, caterers and institutional kitchens." },
+        { label: "Institutional procurement", body: "Supporting organised food procurement requirements." },
+        { label: "Food processing", body: "Supplying raw materials for tomato paste, sauces, dried vegetables, frozen products and other processed foods." },
+        { label: "Regional trade", body: "Exploring commercial opportunities in regional markets where quality, logistics and market requirements can be met." },
+      ],
+      closing: "AgriXpert seeks to build relationships that connect farmers to these market opportunities through more organised sourcing and supply arrangements.",
+    },
+    partnerships: {
+      intro: "We welcome collaboration with:",
+      items: [
+        "Vegetable farmers and cooperatives.",
+        "Irrigation service providers.",
+        "Agricultural input suppliers.",
+        "Produce aggregators.",
+        "Cold storage and logistics companies.",
+        "Supermarkets and retailers.",
+        "Hotels and restaurants.",
+        "Food processing companies.",
+        "Institutional buyers.",
+        "Agricultural finance institutions.",
+      ],
+    },
+    closing: {
+      headline: "Let's Connect Vegetable Farmers to Reliable Markets.",
+      body: "Are you a vegetable farmer looking for dependable buyers? A retailer or processor seeking consistent fresh produce? Or an investor interested in irrigation, aggregation and post-harvest infrastructure? AgriXpert welcomes your partnership.",
+    },
+  },
 };

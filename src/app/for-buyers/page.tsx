@@ -11,7 +11,7 @@ export const instant = false;
 export const metadata: Metadata = pageMetadata({
   title: "For Buyers | AgriXpert",
   description:
-    "Source agricultural commodities through AgriXpert's coordinated supplier and aggregation networks across maize, soybeans, rice and groundnuts.",
+    "Source agricultural commodities through AgriXpert's coordinated supplier and aggregation networks across maize, soybeans, rice, groundnuts and vegetables.",
   path: "/for-buyers",
   image: stockImages.aggregationBags,
 });

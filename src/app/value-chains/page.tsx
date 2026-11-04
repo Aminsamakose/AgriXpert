@@ -12,7 +12,7 @@ export const instant = false;
 export const metadata: Metadata = pageMetadata({
   title: "Value Chains | AgriXpert",
   description:
-    "AgriXpert integrates commercial value chains across maize, soybeans, rice and groundnuts, connecting production, aggregation, processing and market access for each commodity.",
+    "AgriXpert integrates commercial value chains across maize, soybeans, rice, groundnuts and vegetables, connecting production, aggregation, processing and market access for each commodity.",
   path: "/value-chains",
   image: stockImages.cropFieldsAerial,
 });
@@ -24,7 +24,7 @@ export default async function ValueChainsPage() {
     <>
       <PageHero
         eyebrow="Value Chains"
-        title={pick(content, "value-chains.hero.title", "Maize, soybeans, rice and groundnuts")}
+        title={pick(content, "value-chains.hero.title", "Maize, soybeans, rice, groundnuts and vegetables")}
         description={pick(
           content,
           "value-chains.hero.description",
@@ -78,7 +78,7 @@ export default async function ValueChainsPage() {
           <p className="mx-auto mt-4 max-w-2xl text-forest-dark/70">
             Our integrated approach seeks to bring farmers, agricultural service providers, aggregators,
             processors, logistics providers and buyers into a more coordinated commercial ecosystem. Whether
-            it is maize, soybeans, rice or groundnuts, our objective remains the same:
+            it is maize, soybeans, rice, groundnuts or vegetables, our objective remains the same:
           </p>
           <p className="mx-auto mt-6 max-w-2xl font-heading text-lg font-semibold text-forest">
             Make Agricultural Production More Commercially Viable. Make Supply Chains More Reliable. Make
