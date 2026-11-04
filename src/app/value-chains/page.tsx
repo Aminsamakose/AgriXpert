@@ -4,19 +4,28 @@ import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { valueChains, stockImages } from "@/lib/site-data";
 import { valueChainContent } from "@/lib/value-chain-content";
+import { getSiteContent, pick } from "@/lib/content";
+
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "Value Chains | AgriXpert",
 };
 
-export default function ValueChainsPage() {
+export default async function ValueChainsPage() {
+  const content = await getSiteContent();
   return (
     <>
       <PageHero
         eyebrow="Value Chains"
-        title="Maize, soybeans, rice, groundnuts, shea and vegetables"
-        description="Commercial opportunity stories for every commodity AgriXpert works in — for farmers, buyers, processors, investors and partners."
-        image={stockImages.cropFieldsAerial}
+        title={pick(content, "value-chains.hero.title", "Maize, soybeans, rice, groundnuts, shea and vegetables")}
+        description={pick(
+          content,
+          "value-chains.hero.description",
+          "Commercial opportunity stories for every commodity AgriXpert works in — for farmers, buyers, processors, investors and partners."
+        )}
+        image={{ src: pick(content, "value-chains.hero.image", stockImages.cropFieldsAerial.src), alt: stockImages.cropFieldsAerial.alt }}
       />
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

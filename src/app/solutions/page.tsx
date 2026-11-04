@@ -4,6 +4,10 @@ import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { stockImages } from "@/lib/site-data";
 import { solutionsList } from "@/lib/solutions-content";
+import { getSiteContent, pick } from "@/lib/content";
+
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "Our Solutions | AgriXpert",
@@ -27,14 +31,19 @@ const audiences = [
   { label: "For Institutional Partners", body: "Collaborate to strengthen agricultural markets, supply chains and enterprise development.", href: "/partnerships" },
 ];
 
-export default function SolutionsPage() {
+export default async function SolutionsPage() {
+  const content = await getSiteContent();
   return (
     <>
       <PageHero
         eyebrow="Our Solutions"
-        title="Six Interconnected Commercial Solutions"
-        description="AgriXpert does not simply provide agricultural services. We connect the different actors, resources and commercial opportunities required to make agricultural value chains work."
-        image={stockImages.conferenceTable}
+        title={pick(content, "solutions.hero.title", "Six Interconnected Commercial Solutions")}
+        description={pick(
+          content,
+          "solutions.hero.description",
+          "AgriXpert does not simply provide agricultural services. We connect the different actors, resources and commercial opportunities required to make agricultural value chains work."
+        )}
+        image={{ src: pick(content, "solutions.hero.image", stockImages.conferenceTable.src), alt: stockImages.conferenceTable.alt }}
       />
 
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10">

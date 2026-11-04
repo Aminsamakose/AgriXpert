@@ -79,10 +79,7 @@ export const navLinks = [
   { label: "What We Do", href: "/what-we-do" },
   { label: "Solutions", href: "/solutions" },
   { label: "Value Chains", href: "/value-chains" },
-  { label: "For Farmers", href: "/for-farmers" },
-  { label: "For Buyers", href: "/for-buyers" },
   { label: "Insights", href: "/insights" },
-  { label: "Partnerships", href: "/partnerships" },
   { label: "Contact", href: "/contact" },
 ];
 

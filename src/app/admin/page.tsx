@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import ContentManager from "@/components/admin/ContentManager";
 
-type Tab = "enquiries" | "farmers" | "buyers" | "suppliers";
+type Tab = "enquiries" | "farmers" | "buyers" | "suppliers" | "content";
 
 type Enquiry = {
   id: string;
@@ -61,6 +62,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: "farmers", label: "Farmers" },
   { key: "buyers", label: "Buyers" },
   { key: "suppliers", label: "Suppliers" },
+  { key: "content", label: "Site Content" },
 ];
 
 function formatDate(iso: string) {
@@ -107,6 +109,7 @@ export default function AdminDashboardPage() {
   }, [checkAuth]);
 
   const loadTab = useCallback(async (tab: Tab) => {
+    if (tab === "content") return;
     setLoading(true);
     setError(null);
 
@@ -386,6 +389,8 @@ export default function AdminDashboardPage() {
           ))}
         </div>
       )}
+
+      {activeTab === "content" && <ContentManager />}
     </section>
   );
 }

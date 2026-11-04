@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import SupplierRegistrationForm from "@/components/SupplierRegistrationForm";
 import { stockImages } from "@/lib/site-data";
+import { getSiteContent, pick } from "@/lib/content";
+
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "Partnerships | AgriXpert",
@@ -13,13 +17,14 @@ const models = [
   { title: "Investment Partnerships", body: "Capital and co-investment opportunities in supply-chain infrastructure." },
 ];
 
-export default function PartnershipsPage() {
+export default async function PartnershipsPage() {
+  const content = await getSiteContent();
   return (
     <>
       <PageHero
         eyebrow="Partnerships"
-        title="Institutional, commercial and investment partnerships"
-        image={stockImages.handshake}
+        title={pick(content, "partnerships.hero.title", "Institutional, commercial and investment partnerships")}
+        image={{ src: pick(content, "partnerships.hero.image", stockImages.handshake.src), alt: stockImages.handshake.alt }}
       />
       <section className="mx-auto max-w-5xl px-6 py-16 lg:px-10">
         <div className="grid gap-6 sm:grid-cols-3">

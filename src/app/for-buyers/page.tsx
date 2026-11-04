@@ -3,18 +3,23 @@ import { Suspense } from "react";
 import PageHero from "@/components/PageHero";
 import BuyerRegistrationForm from "@/components/BuyerRegistrationForm";
 import { buyerValueProps, stockImages } from "@/lib/site-data";
+import { getSiteContent, pick } from "@/lib/content";
+
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "For Buyers | AgriXpert",
 };
 
-export default function ForBuyersPage() {
+export default async function ForBuyersPage() {
+  const content = await getSiteContent();
   return (
     <>
       <PageHero
         eyebrow="For Buyers"
-        title="Commodity sourcing, procurement and supply agreements"
-        image={stockImages.aggregationBags}
+        title={pick(content, "for-buyers.hero.title", "Commodity sourcing, procurement and supply agreements")}
+        image={{ src: pick(content, "for-buyers.hero.image", stockImages.aggregationBags.src), alt: stockImages.aggregationBags.alt }}
       />
       <section className="mx-auto max-w-5xl px-6 py-16 lg:px-10">
         <h2 className="font-heading text-2xl font-bold text-forest">What You Can Do</h2>

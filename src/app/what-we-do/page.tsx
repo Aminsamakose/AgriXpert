@@ -2,18 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { solutions, stockImages } from "@/lib/site-data";
+import { getSiteContent, pick } from "@/lib/content";
+
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "What We Do | AgriXpert",
 };
 
-export default function WhatWeDoPage() {
+export default async function WhatWeDoPage() {
+  const content = await getSiteContent();
   return (
     <>
       <PageHero
         eyebrow="What We Do"
-        title="Production, aggregation, mechanisation and supply chain solutions"
-        image={stockImages.tractorField}
+        title={pick(content, "what-we-do.hero.title", "Production, aggregation, mechanisation and supply chain solutions")}
+        image={{ src: pick(content, "what-we-do.hero.image", stockImages.tractorField.src), alt: stockImages.tractorField.alt }}
       />
       <section className="mx-auto max-w-5xl space-y-16 px-6 py-16 lg:px-10">
         {solutions.map((s) => (

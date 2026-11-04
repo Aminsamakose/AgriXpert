@@ -12,6 +12,9 @@ import {
   impactIndicators,
   stockImages,
 } from "@/lib/site-data";
+import { getSiteContent, pick } from "@/lib/content";
+
+export const instant = false;
 
 function SectionHeading({
   eyebrow,
@@ -42,13 +45,21 @@ function SectionHeading({
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const content = await getSiteContent();
+  const heroImage = pick(content, "home.hero.image", stockImages.heroField.src);
+  const heroTitle = pick(content, "home.hero.title", "Connecting Agricultural Production to Profitable Markets.");
+  const heroDescription = pick(
+    content,
+    "home.hero.description",
+    "AgriXpert builds commercially sustainable agricultural supply chains by connecting farmers, agricultural service providers, processors and buyers through coordinated production, aggregation, value addition and market access."
+  );
   return (
     <>
       {/* Section 1: Hero */}
       <section className="relative isolate overflow-hidden bg-forest text-natural-white">
         <Image
-          src={stockImages.heroField.src}
+          src={heroImage}
           alt={stockImages.heroField.alt}
           fill
           priority
@@ -63,14 +74,9 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
           <div className="max-w-3xl">
             <h1 className="font-heading text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Connecting Agricultural Production to Profitable Markets.
+              {heroTitle}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-natural-white/85">
-              AgriXpert builds commercially sustainable agricultural supply
-              chains by connecting farmers, agricultural service providers,
-              processors and buyers through coordinated production,
-              aggregation, value addition and market access.
-            </p>
+            <p className="mt-6 max-w-2xl text-lg text-natural-white/85">{heroDescription}</p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
                 href="/what-we-do"
