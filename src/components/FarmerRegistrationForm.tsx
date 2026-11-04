@@ -71,6 +71,26 @@ export default function FarmerRegistrationForm() {
       return;
     }
 
+    // Best-effort email notification — the registration is already saved
+    // above, so a failure here must never block the success state.
+    fetch("/api/notify-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject: `New farmer registration: ${fullName}`,
+        replyTo: email || undefined,
+        fields: [
+          { label: "Full Name", value: fullName },
+          { label: "Phone", value: phone },
+          { label: "Email", value: email || "Not provided" },
+          { label: "Location", value: location || "Not provided" },
+          { label: "Farm Size (ha)", value: farmSizeRaw || "Not provided" },
+          { label: "Commodities", value: selectedCommodities.join(", ") || "None selected" },
+          { label: "Cooperative/Group", value: cooperative || "Not provided" },
+        ],
+      }),
+    }).catch(() => {});
+
     setStatus("success");
     form.reset();
     setSelectedCommodities([]);

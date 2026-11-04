@@ -6,6 +6,7 @@ import ValueChainCtas from "@/components/ValueChainCtas";
 import { valueChains, stockImages } from "@/lib/site-data";
 import { valueChainContent, type ValueChainContent } from "@/lib/value-chain-content";
 import { getPageContentOverride } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
@@ -20,7 +21,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const commodity = valueChains.find((vc) => vc.slug === slug);
-  return { title: commodity ? `${commodity.name} Value Chain | AgriXpert` : "Value Chain | AgriXpert" };
+  const override = await getPageContentOverride<ValueChainContent>("value_chain", slug);
+  const content = override ?? valueChainContent[slug];
+  if (!commodity || !content) {
+    return { title: "Value Chain | AgriXpert" };
+  }
+  const heroImage = stockImages[content.heroImageKey as keyof typeof stockImages] ?? stockImages.cropFieldsAerial;
+  return pageMetadata({
+    title: `${commodity.name} Value Chain | AgriXpert`,
+    description: content.tagline || commodity.body,
+    path: `/value-chains/${slug}`,
+    image: heroImage,
+  });
 }
 
 function BulletList({ items, dotClass = "bg-agri-green" }: { items: string[]; dotClass?: string }) {

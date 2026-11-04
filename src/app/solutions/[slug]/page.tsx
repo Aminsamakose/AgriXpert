@@ -6,6 +6,7 @@ import SolutionCtas from "@/components/SolutionCtas";
 import { stockImages } from "@/lib/site-data";
 import { solutionsContent, type SolutionContent } from "@/lib/solutions-content";
 import { getPageContentOverride } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
@@ -19,8 +20,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const content = solutionsContent[slug];
-  return { title: content ? `${content.name} | AgriXpert` : "Solution | AgriXpert" };
+  const override = await getPageContentOverride<SolutionContent>("solution", slug);
+  const content = override ?? solutionsContent[slug];
+  if (!content) {
+    return { title: "Solution | AgriXpert" };
+  }
+  const heroImage = stockImages[content.heroImageKey as keyof typeof stockImages] ?? stockImages.teamMeeting;
+  return pageMetadata({
+    title: `${content.name} | AgriXpert`,
+    description: content.tagline,
+    path: `/solutions/${slug}`,
+    image: heroImage,
+  });
 }
 
 function BulletList({ items, dotClass = "bg-agri-green" }: { items: string[]; dotClass?: string }) {

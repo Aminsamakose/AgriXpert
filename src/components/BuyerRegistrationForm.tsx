@@ -70,6 +70,26 @@ export default function BuyerRegistrationForm() {
       return;
     }
 
+    // Best-effort email notification — the request is already saved above,
+    // so a failure here must never block the success state.
+    fetch("/api/notify-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject: `New buyer sourcing request: ${companyName}`,
+        replyTo: email,
+        fields: [
+          { label: "Company Name", value: companyName },
+          { label: "Contact Name", value: contactName },
+          { label: "Email", value: email },
+          { label: "Phone", value: phone || "Not provided" },
+          { label: "Commodities Needed", value: selectedCommodities.join(", ") },
+          { label: "Quantity Required", value: quantityRequired || "Not provided" },
+          { label: "Quality Requirements", value: qualityRequirements || "Not provided" },
+        ],
+      }),
+    }).catch(() => {});
+
     setStatus("success");
     form.reset();
     setSelectedCommodities([]);

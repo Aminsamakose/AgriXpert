@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import { contactEmail, stockImages } from "@/lib/site-data";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms of Service | AgriXpert",
-};
+  description: "The terms governing use of the AgriXpert website and its agricultural value chain services.",
+  path: "/terms-of-service",
+});
 
 const COPYRIGHT_YEAR = 2026;
 

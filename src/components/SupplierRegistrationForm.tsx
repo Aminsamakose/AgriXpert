@@ -66,6 +66,24 @@ export default function SupplierRegistrationForm() {
       return;
     }
 
+    // Best-effort email notification — the registration is already saved
+    // above, so a failure here must never block the success state.
+    fetch("/api/notify-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject: `New supplier/partner registration: ${companyName}`,
+        replyTo: email,
+        fields: [
+          { label: "Company Name", value: companyName },
+          { label: "Contact Name", value: contactName },
+          { label: "Email", value: email },
+          { label: "Phone", value: phone || "Not provided" },
+          { label: "Services", value: selectedServices.join(", ") },
+        ],
+      }),
+    }).catch(() => {});
+
     setStatus("success");
     form.reset();
     setSelectedServices([]);

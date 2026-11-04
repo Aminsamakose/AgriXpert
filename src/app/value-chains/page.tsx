@@ -5,13 +5,17 @@ import PageHero from "@/components/PageHero";
 import { valueChains, stockImages } from "@/lib/site-data";
 import { valueChainContent, type ValueChainContent } from "@/lib/value-chain-content";
 import { getSiteContent, pick, getAllPageContentOverrides } from "@/lib/content";
-
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Value Chains | AgriXpert",
-};
+  description:
+    "AgriXpert integrates commercial value chains across maize, soybeans, rice, groundnuts, shea and vegetables, connecting production, aggregation, processing and market access for each commodity.",
+  path: "/value-chains",
+  image: stockImages.cropFieldsAerial,
+});
 
 export default async function ValueChainsPage() {
   const content = await getSiteContent();

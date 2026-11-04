@@ -3,13 +3,17 @@ import PageHero from "@/components/PageHero";
 import SupplierRegistrationForm from "@/components/SupplierRegistrationForm";
 import { stockImages } from "@/lib/site-data";
 import { getSiteContent, pick } from "@/lib/content";
-
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Partnerships | AgriXpert",
-};
+  description:
+    "Explore commercially viable agricultural partnership opportunities with AgriXpert across production, aggregation, mechanisation, storage and processing.",
+  path: "/partnerships",
+  image: stockImages.handshake,
+});
 
 const models = [
   { title: "Institutional Partnerships", body: "Collaboration with development organisations and government programmes." },

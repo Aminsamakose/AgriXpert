@@ -3,12 +3,17 @@ import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { stockImages } from "@/lib/site-data";
 import { getSiteContent, pick } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "About Us | AgriXpert",
-};
+  description:
+    "AgriXpert is a market-led agricultural value chain integration company connecting farmers, agricultural businesses, service providers, processors and buyers across Ghana and Africa. Learn our story, mission, vision and leadership.",
+  path: "/about",
+  image: stockImages.teamMeeting,
+});
 
 const commodities = ["Maize", "Soybeans", "Rice", "Groundnuts", "Shea", "Vegetables"];
 

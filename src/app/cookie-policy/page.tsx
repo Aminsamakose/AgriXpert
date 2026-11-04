@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import { contactEmail, stockImages } from "@/lib/site-data";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Cookie Policy | AgriXpert",
-};
+  description: "How AgriXpert uses cookies and similar technologies on this website.",
+  path: "/cookie-policy",
+});
 
 const COPYRIGHT_YEAR = 2026;
 

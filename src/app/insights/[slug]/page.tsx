@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import { stockImages } from "@/lib/site-data";
 import { supabase } from "@/lib/supabase";
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
@@ -42,7 +43,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const article = await getInsight(slug);
-  return { title: article ? `${article.title} | AgriXpert Insights` : "Insights | AgriXpert" };
+  if (!article) {
+    return { title: "Insights | AgriXpert" };
+  }
+  return pageMetadata({
+    title: `${article.title} | AgriXpert Insights`,
+    description: article.excerpt || `Read "${article.title}" on AgriXpert Insights.`,
+    path: `/insights/${article.slug}`,
+    image: article.image_url ? { src: article.image_url, alt: article.title } : stockImages.dataCharts,
+  });
 }
 
 function formatDate(iso: string) {

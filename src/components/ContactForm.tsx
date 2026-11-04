@@ -49,6 +49,24 @@ export default function ContactForm() {
       return;
     }
 
+    // Best-effort email notification — the enquiry is already saved above,
+    // so a failure here (e.g. no email provider configured) must never
+    // block the success state the person sees.
+    fetch("/api/notify-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject: `New ${enquiryType} enquiry from ${name}`,
+        replyTo: email,
+        fields: [
+          { label: "Name", value: name },
+          { label: "Email", value: email },
+          { label: "Enquiry Type", value: enquiryType },
+          { label: "Message", value: message },
+        ],
+      }),
+    }).catch(() => {});
+
     setStatus("success");
     form.reset();
   }

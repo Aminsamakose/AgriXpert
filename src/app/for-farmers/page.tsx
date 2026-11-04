@@ -4,13 +4,17 @@ import PageHero from "@/components/PageHero";
 import FarmerRegistrationForm from "@/components/FarmerRegistrationForm";
 import { farmerValueProps, stockImages } from "@/lib/site-data";
 import { getSiteContent, pick } from "@/lib/content";
-
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "For Farmers | AgriXpert",
-};
+  description:
+    "Access structured production opportunities, agricultural services and potential market linkages through AgriXpert's coordinated farmer network.",
+  path: "/for-farmers",
+  image: stockImages.farmerField,
+});
 
 export default async function ForFarmersPage() {
   const content = await getSiteContent();

@@ -5,12 +5,17 @@ import PageHero from "@/components/PageHero";
 import { stockImages } from "@/lib/site-data";
 import { getSiteContent, pick } from "@/lib/content";
 import { supabase } from "@/lib/supabase";
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Insights | AgriXpert",
-};
+  description:
+    "Industry news, market intelligence and knowledge from AgriXpert: market reports, project updates and announcements across our agricultural value chains.",
+  path: "/insights",
+  image: stockImages.dataCharts,
+});
 
 type InsightRow = {
   slug: string;

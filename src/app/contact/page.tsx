@@ -4,13 +4,17 @@ import PageHero from "@/components/PageHero";
 import ContactForm from "@/components/ContactForm";
 import { contactEmail, stockImages } from "@/lib/site-data";
 import { getSiteContent, pick } from "@/lib/content";
-
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact | AgriXpert",
-};
+  description:
+    "Get in touch with AgriXpert for enquiries about farming, buying, partnerships or investment in agricultural value chains across Ghana and West Africa.",
+  path: "/contact",
+  image: stockImages.conferenceTable,
+});
 
 export default async function ContactPage() {
   const content = await getSiteContent();

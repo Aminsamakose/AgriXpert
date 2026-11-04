@@ -5,13 +5,17 @@ import PageHero from "@/components/PageHero";
 import { stockImages } from "@/lib/site-data";
 import { solutionsList, type SolutionContent } from "@/lib/solutions-content";
 import { getSiteContent, pick, getAllPageContentOverrides } from "@/lib/content";
-
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Our Solutions | AgriXpert",
-};
+  description:
+    "Explore AgriXpert's six commercial solutions: production coordination, aggregation and procurement, mechanisation and farm services, storage and supply chain management, processing and value addition, and market access and commercial trade.",
+  path: "/solutions",
+  image: stockImages.conferenceTable,
+});
 
 const integrationFlow = [
   { number: "01", title: "Production Coordination", body: "Organising farmers and aligning production with market demand." },

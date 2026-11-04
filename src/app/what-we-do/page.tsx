@@ -5,12 +5,17 @@ import PageHero from "@/components/PageHero";
 import { solutions, stockImages } from "@/lib/site-data";
 import { solutionsContent, type SolutionContent } from "@/lib/solutions-content";
 import { getSiteContent, pick, getAllPageContentOverrides } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "What We Do | AgriXpert",
-};
+  description:
+    "Six coordinated functions, one agricultural value chain: production coordination, aggregation and procurement, mechanisation, storage and supply chain, processing and value addition, and market access.",
+  path: "/what-we-do",
+  image: stockImages.tractorField,
+});
 
 const audiences = [
   { label: "For Farmers", body: "Access structured production opportunities, agricultural services and potential market linkages.", href: "/for-farmers" },

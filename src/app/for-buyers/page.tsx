@@ -4,13 +4,17 @@ import PageHero from "@/components/PageHero";
 import BuyerRegistrationForm from "@/components/BuyerRegistrationForm";
 import { buyerValueProps, stockImages } from "@/lib/site-data";
 import { getSiteContent, pick } from "@/lib/content";
-
+import { pageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "For Buyers | AgriXpert",
-};
+  description:
+    "Source agricultural commodities through AgriXpert's coordinated supplier and aggregation networks across maize, soybeans, rice, groundnuts, shea and vegetables.",
+  path: "/for-buyers",
+  image: stockImages.aggregationBags,
+});
 
 export default async function ForBuyersPage() {
   const content = await getSiteContent();
