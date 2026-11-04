@@ -85,13 +85,7 @@ export async function POST(request: Request) {
     if (!res.ok) {
       const body = await res.text();
       console.error("Resend notification failed:", res.status, body);
-      return NextResponse.json({
-        ok: true,
-        sent: false,
-        reason: "Email provider error",
-        providerStatus: res.status,
-        providerDetail: body,
-      });
+      return NextResponse.json({ ok: true, sent: false, reason: "Email provider error" });
     }
 
     return NextResponse.json({ ok: true, sent: true });
