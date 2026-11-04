@@ -5,10 +5,19 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ContentManager from "@/components/admin/ContentManager";
 import PageContentManager from "@/components/admin/PageContentManager";
+import InsightsManager from "@/components/admin/InsightsManager";
 import { valueChains, stockImages } from "@/lib/site-data";
 import { solutionsList } from "@/lib/solutions-content";
 
-type Tab = "enquiries" | "farmers" | "buyers" | "suppliers" | "content" | "value-chains" | "solutions";
+type Tab =
+  | "enquiries"
+  | "farmers"
+  | "buyers"
+  | "suppliers"
+  | "content"
+  | "value-chains"
+  | "solutions"
+  | "insights";
 
 const stockImageOptions = Object.entries(stockImages).map(([key, img]) => ({ key, src: img.src }));
 
@@ -70,6 +79,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: "content", label: "Site Content" },
   { key: "value-chains", label: "Value Chains" },
   { key: "solutions", label: "Solutions" },
+  { key: "insights", label: "Insights" },
 ];
 
 function formatDate(iso: string) {
@@ -116,7 +126,7 @@ export default function AdminDashboardPage() {
   }, [checkAuth]);
 
   const loadTab = useCallback(async (tab: Tab) => {
-    if (tab === "content" || tab === "value-chains" || tab === "solutions") return;
+    if (tab === "content" || tab === "value-chains" || tab === "solutions" || tab === "insights") return;
     setLoading(true);
     setError(null);
 
@@ -479,6 +489,7 @@ export default function AdminDashboardPage() {
           stockImageOptions={stockImageOptions}
         />
       )}
+      {activeTab === "insights" && <InsightsManager />}
     </section>
   );
 }
