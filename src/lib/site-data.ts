@@ -280,9 +280,8 @@ export const footerColumns = [
   {
     heading: "Contact",
     links: [
-      // Phone and address are still placeholders — replace once confirmed.
       { label: "agrixpert@samakose.com", href: "mailto:agrixpert@samakose.com" },
-      { label: "+233 (0) 00-000-0000", href: "/contact" },
+      { label: "+233 (0) 55-858-9254", href: "tel:+233558589254" },
       { label: "Tamale, Northern Ghana", href: "/contact" },
     ],
   },
