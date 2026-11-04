@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { valueChains } from "@/lib/site-data";
+import RegistrationConsent from "./RegistrationConsent";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -19,6 +20,7 @@ export default function FarmerRegistrationForm() {
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>(
     preselected ? [preselected] : []
   );
+  const [consentGiven, setConsentGiven] = useState(false);
 
   function toggleCommodity(name: string) {
     setSelectedCommodities((prev) =>
@@ -43,6 +45,12 @@ export default function FarmerRegistrationForm() {
     if (!fullName || !phone) {
       setStatus("error");
       setErrorMessage("Please provide at least your full name and phone number.");
+      return;
+    }
+
+    if (!consentGiven) {
+      setStatus("error");
+      setErrorMessage("Please agree to the Privacy Policy, Terms of Service and Cookie Policy to continue.");
       return;
     }
 
@@ -94,6 +102,7 @@ export default function FarmerRegistrationForm() {
     setStatus("success");
     form.reset();
     setSelectedCommodities([]);
+    setConsentGiven(false);
   }
 
   if (status === "success") {
@@ -213,6 +222,8 @@ export default function FarmerRegistrationForm() {
           ))}
         </div>
       </div>
+
+      <RegistrationConsent checked={consentGiven} onChange={setConsentGiven} />
 
       {status === "error" && errorMessage && (
         <p className="text-sm font-medium text-red-600">{errorMessage}</p>

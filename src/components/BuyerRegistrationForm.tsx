@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { valueChains } from "@/lib/site-data";
+import RegistrationConsent from "./RegistrationConsent";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -19,6 +20,7 @@ export default function BuyerRegistrationForm() {
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>(
     preselected ? [preselected] : []
   );
+  const [consentGiven, setConsentGiven] = useState(false);
 
   function toggleCommodity(name: string) {
     setSelectedCommodities((prev) =>
@@ -49,6 +51,12 @@ export default function BuyerRegistrationForm() {
     if (selectedCommodities.length === 0) {
       setStatus("error");
       setErrorMessage("Please select at least one commodity you're sourcing.");
+      return;
+    }
+
+    if (!consentGiven) {
+      setStatus("error");
+      setErrorMessage("Please agree to the Privacy Policy, Terms of Service and Cookie Policy to continue.");
       return;
     }
 
@@ -93,6 +101,7 @@ export default function BuyerRegistrationForm() {
     setStatus("success");
     form.reset();
     setSelectedCommodities([]);
+    setConsentGiven(false);
   }
 
   if (status === "success") {
@@ -212,6 +221,8 @@ export default function BuyerRegistrationForm() {
           />
         </div>
       </div>
+
+      <RegistrationConsent checked={consentGiven} onChange={setConsentGiven} />
 
       {status === "error" && errorMessage && (
         <p className="text-sm font-medium text-red-600">{errorMessage}</p>

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
+import RegistrationConsent from "./RegistrationConsent";
 
 const serviceCategories = [
   "Mechanisation & Farm Equipment",
@@ -19,6 +20,7 @@ export default function SupplierRegistrationForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [consentGiven, setConsentGiven] = useState(false);
 
   function toggleService(name: string) {
     setSelectedServices((prev) =>
@@ -47,6 +49,12 @@ export default function SupplierRegistrationForm() {
     if (selectedServices.length === 0) {
       setStatus("error");
       setErrorMessage("Please select at least one service you provide.");
+      return;
+    }
+
+    if (!consentGiven) {
+      setStatus("error");
+      setErrorMessage("Please agree to the Privacy Policy, Terms of Service and Cookie Policy to continue.");
       return;
     }
 
@@ -87,6 +95,7 @@ export default function SupplierRegistrationForm() {
     setStatus("success");
     form.reset();
     setSelectedServices([]);
+    setConsentGiven(false);
   }
 
   if (status === "success") {
@@ -178,6 +187,8 @@ export default function SupplierRegistrationForm() {
           ))}
         </div>
       </div>
+
+      <RegistrationConsent checked={consentGiven} onChange={setConsentGiven} />
 
       {status === "error" && errorMessage && (
         <p className="text-sm font-medium text-red-600">{errorMessage}</p>
