@@ -8,8 +8,8 @@ export const stockImages = {
     alt: "A farmer standing in a cornfield",
   },
   farmerField: {
-    src: "https://images.unsplash.com/photo-1647463121865-696ca458e9d5?fm=jpg&q=80&w=1600&auto=format&fit=crop",
-    alt: "A farmer standing in a cornfield",
+    src: "https://images.unsplash.com/photo-1741874299706-2b8e16839aaa?fm=jpg&q=80&w=1600&auto=format&fit=crop",
+    alt: "A farmer inspecting crops by hand in a green field",
   },
   aggregationBags: {
     src: "https://images.unsplash.com/photo-1774946103680-3d34a461a581?fm=jpg&q=80&w=1600&auto=format&fit=crop",
@@ -46,6 +46,14 @@ export const stockImages = {
   documentSigning: {
     src: "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?fm=jpg&q=80&w=2400&auto=format&fit=crop",
     alt: "A hand signing a document with a pen",
+  },
+  warehouseLogistics: {
+    src: "https://images.unsplash.com/photo-1721937127582-ed331de95a04?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A forklift stacking wrapped pallets in a storage warehouse",
+  },
+  packagingLine: {
+    src: "https://images.unsplash.com/photo-1589793463357-5fb813435467?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "Workers at a packaging and processing production line",
   },
   maizeHarvest: {
     src: "https://images.unsplash.com/photo-1700241739138-4ec27c548035?fm=jpg&q=80&w=2400&auto=format&fit=crop",

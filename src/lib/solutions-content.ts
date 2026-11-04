@@ -21,6 +21,8 @@ export type SolutionContent = {
     | "tractorField"
     | "cropFieldsAerial"
     | "teamMeeting"
+    | "warehouseLogistics"
+    | "packagingLine"
     | "handshake";
   overview: {
     intro: string;
@@ -422,7 +424,7 @@ export const solutionsContent: Record<string, SolutionContent> = {
     number: "04",
     name: "Storage & Supply Chain Management",
     tagline: "Protecting Agricultural Value. Improving Commodity Movement. Strengthening Supply Reliability.",
-    heroImageKey: "cropFieldsAerial",
+    heroImageKey: "warehouseLogistics",
     overview: {
       intro: "Preserving Value Beyond the Farm Gate",
       paragraphs: [
@@ -551,7 +553,7 @@ export const solutionsContent: Record<string, SolutionContent> = {
     number: "05",
     name: "Processing & Value Addition",
     tagline: "Transforming Agricultural Commodities into Higher-Value Commercial Products.",
-    heroImageKey: "teamMeeting",
+    heroImageKey: "packagingLine",
     overview: {
       intro: "Moving Beyond Raw Agricultural Production",
       paragraphs: [
