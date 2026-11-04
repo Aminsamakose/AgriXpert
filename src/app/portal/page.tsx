@@ -226,11 +226,12 @@ export default function PortalPage() {
       />
       <section className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
         <div className="rounded-2xl border border-agri-green/20 bg-agri-green/5 p-5">
-          <p className="text-sm font-semibold text-forest">Beyond individual status tracking</p>
+          <p className="text-sm font-semibold text-forest">Our focus is access</p>
           <p className="mt-2 text-sm text-forest-dark/70">
-            AgriXpert coordinates more than farmer-to-buyer transactions. Equipment and service
-            providers, processors and financial partners register here too, as part of one
-            coordinated network rather than isolated listings. We are also building toward
+            AgriXpert's role is to get farmers and agricultural businesses access: to buyers,
+            mechanisation, storage, processing and finance, whether through our own coordination or
+            through specialist partners in these areas. Equipment, logistics and financial-service
+            providers register here so we can connect farmers to them. We are also building toward
             group-level visibility for cooperatives, and linking registration to the business
             strengthening support AgriXpert and its partners provide, so that registering here is a
             step toward a more investment-ready enterprise, not only a status update.

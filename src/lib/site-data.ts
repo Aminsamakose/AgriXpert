@@ -118,8 +118,8 @@ export const differentiators = [
     body: "Our focus is deliberately narrow: the Northern, Savannah, North East, Upper East and Upper West regions. We build deep operating relationships in these corridors rather than spreading thin across the country.",
   },
   {
-    title: "Integration, Not Just Aggregation or Advisory",
-    body: "We are not a trading company that only takes positions in commodities, and we are not an advisory programme that stops at recommendations. We coordinate production, aggregation, mechanisation, storage, processing linkage and market access as one connected model.",
+    title: "Access Integration, Not Infrastructure Duplication",
+    body: "Our role is to get farmers and agricultural businesses access to markets, mechanisation, storage, processing, finance and buyers, coordinating this access as one connected relationship rather than leaving farmers to find and negotiate with each specialist provider separately.",
   },
   {
     title: "Shea Sector Relationships",
