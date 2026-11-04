@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import PageHero from "@/components/PageHero";
 import FarmerRegistrationForm from "@/components/FarmerRegistrationForm";
 import { farmerValueProps, stockImages } from "@/lib/site-data";
@@ -35,7 +36,9 @@ export default function ForFarmersPage() {
           market access programmes. A member of our team will follow up to verify your details.
         </p>
         <div className="mt-6">
-          <FarmerRegistrationForm />
+          <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-forest/5" />}>
+            <FarmerRegistrationForm />
+          </Suspense>
         </div>
       </section>
     </>

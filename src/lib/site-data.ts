@@ -47,6 +47,30 @@ export const stockImages = {
     src: "https://images.unsplash.com/photo-1763729805496-b5dbf7f00c79?fm=jpg&q=80&w=2400&auto=format&fit=crop",
     alt: "A hand signing a document with a pen",
   },
+  maizeHarvest: {
+    src: "https://images.unsplash.com/photo-1700241739138-4ec27c548035?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A combine harvester working through a golden maize field at sunrise",
+  },
+  soybeanField: {
+    src: "https://images.unsplash.com/photo-1758158329346-bed873fb6d9a?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "Close-up of a sunlit, ripe soybean field ready for harvest",
+  },
+  ricePaddy: {
+    src: "https://images.unsplash.com/photo-1728895604559-a4e16081504e?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "Close-up of green and gold rice stalks in a paddy field",
+  },
+  groundnutsPile: {
+    src: "https://images.unsplash.com/photo-1549978113-29eb25c8177f?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "Close-up of a pile of unshelled groundnuts",
+  },
+  sheaButter: {
+    src: "https://images.unsplash.com/photo-1638131163449-70059e10de6a?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "Raw shea butter beside packaged shea butter jars",
+  },
+  vegetableHarvest: {
+    src: "https://images.unsplash.com/photo-1671528443617-26b1ecebb66f?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+    alt: "A close-up pile of freshly harvested ripe tomatoes",
+  },
 };
 
 export const navLinks = [

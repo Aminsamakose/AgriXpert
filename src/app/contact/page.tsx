@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import PageHero from "@/components/PageHero";
 import ContactForm from "@/components/ContactForm";
 import { contactEmail, stockImages } from "@/lib/site-data";
@@ -38,7 +39,9 @@ export default function ContactPage() {
           </p>
         </div>
 
-        <ContactForm />
+        <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-forest/5" />}>
+          <ContactForm />
+        </Suspense>
       </section>
     </>
   );

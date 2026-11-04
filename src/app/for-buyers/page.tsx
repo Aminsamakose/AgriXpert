@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import PageHero from "@/components/PageHero";
 import BuyerRegistrationForm from "@/components/BuyerRegistrationForm";
 import { buyerValueProps, stockImages } from "@/lib/site-data";
@@ -31,7 +32,9 @@ export default function ForBuyersPage() {
           Tell us what you&apos;re sourcing and we&apos;ll connect you with available aggregated supply.
         </p>
         <div className="mt-6">
-          <BuyerRegistrationForm />
+          <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-forest/5" />}>
+            <BuyerRegistrationForm />
+          </Suspense>
         </div>
       </section>
     </>

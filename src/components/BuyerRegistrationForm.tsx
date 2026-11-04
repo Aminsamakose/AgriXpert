@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { valueChains } from "@/lib/site-data";
@@ -7,9 +8,17 @@ import { valueChains } from "@/lib/site-data";
 type Status = "idle" | "submitting" | "success" | "error";
 
 export default function BuyerRegistrationForm() {
+  const searchParams = useSearchParams();
+  const requestedCommodity = searchParams.get("commodity");
+  const preselected = valueChains.find(
+    (vc) => vc.name.toLowerCase() === requestedCommodity?.toLowerCase()
+  )?.name;
+
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [selectedCommodities, setSelectedCommodities] = useState<string[]>([]);
+  const [selectedCommodities, setSelectedCommodities] = useState<string[]>(
+    preselected ? [preselected] : []
+  );
 
   function toggleCommodity(name: string) {
     setSelectedCommodities((prev) =>
@@ -80,6 +89,7 @@ export default function BuyerRegistrationForm() {
 
   return (
     <form
+      id="enquiry"
       onSubmit={handleSubmit}
       className="space-y-4 rounded-2xl border border-forest/10 bg-white p-6 shadow-sm"
     >

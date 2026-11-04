@@ -1,0 +1,723 @@
+// Structured content for each value-chain page, following the commercial
+// opportunity-story journey: Opportunity -> Production -> Farmers ->
+// Coordination -> Aggregation -> Quality -> Markets -> Partnerships -> CTA.
+
+export type ValueChainContent = {
+  slug: string;
+  name: string;
+  tagline: string;
+  heroImageKey:
+    | "maizeHarvest"
+    | "soybeanField"
+    | "ricePaddy"
+    | "groundnutsPile"
+    | "sheaButter"
+    | "vegetableHarvest";
+  overview: {
+    intro: string;
+    paragraphs: string[];
+    proposition?: string;
+  };
+  sourcing: {
+    intro: string;
+    factors: string[];
+    note: string;
+  };
+  farmerNetwork: {
+    intro: string;
+    groups: string[];
+    closing: string;
+  };
+  coordination: {
+    intro: string;
+    items: string[];
+    closing: string;
+  };
+  aggregation: {
+    intro: string;
+    items: string[];
+    closing: string;
+  };
+  quality: {
+    intro: string;
+    groups: { label?: string; items: string[] }[];
+    closing: string;
+  };
+  markets: {
+    intro: string;
+    items: { label: string; body: string }[];
+    closing: string;
+  };
+  partnerships: {
+    intro: string;
+    items: string[];
+  };
+  closing: {
+    headline: string;
+    body: string;
+  };
+};
+
+export const valueChainContent: Record<string, ValueChainContent> = {
+  maize: {
+    slug: "maize",
+    name: "Maize",
+    tagline: "From the Farmer's Field to the Industries That Feed a Nation.",
+    heroImageKey: "maizeHarvest",
+    overview: {
+      intro: "Turning Maize Production into Commercial Opportunity",
+      paragraphs: [
+        "Maize is more than a staple food. It is a critical commodity supporting food security, livestock production, poultry feed manufacturing and agro-industrial development.",
+        "Across Ghana, demand for maize creates opportunities for farmers, aggregators, processors, feed manufacturers and commodity traders. However, unlocking this opportunity requires more than increasing production. It requires reliable supply, coordinated production systems, appropriate post-harvest handling and dependable connections to commercial markets.",
+        "At AgriXpert, we are building a market-led maize value chain that connects farmers to commercial buyers while helping businesses access quality maize through more coordinated sourcing and aggregation arrangements. Our ambition is to transform fragmented maize production into a more organised, commercially responsive and sustainable supply system.",
+      ],
+      proposition: "Grow with the market. Supply with confidence. Create value at every stage.",
+    },
+    sourcing: {
+      intro:
+        "AgriXpert seeks to establish structured maize sourcing networks across major production areas, beginning with opportunities in Northern Ghana and expanding as commercial demand develops. We intend to work with farmers, farmer-based organisations, cooperatives and commercial producers to identify production opportunities and coordinate supply around market requirements.",
+      factors: [
+        "Production potential and seasonal availability.",
+        "Farmer concentration and production capacity.",
+        "Accessibility and transportation infrastructure.",
+        "Proximity to aggregation and storage facilities.",
+        "Demand from processors and institutional buyers.",
+      ],
+      note: "Specific sourcing communities and production locations will be published as operational partnerships are confirmed.",
+    },
+    farmerNetwork: {
+      intro:
+        "Behind every reliable maize supply is a network of committed farmers and dependable agricultural service providers. AgriXpert aims to develop a structured network of smallholder farmers, commercial producers, cooperatives, input suppliers, mechanisation providers and commodity aggregators.",
+      groups: [],
+      closing:
+        "Through this network, farmers can access coordinated production opportunities while buyers benefit from more organised sourcing arrangements. We seek to build relationships based on transparency, dependable supply, fair commercial arrangements and long-term collaboration.",
+    },
+    coordination: {
+      intro:
+        "Reliable markets begin with well-coordinated production. AgriXpert's approach focuses on aligning production activities with market demand, helping farmers plan what to produce, when to produce it and how to meet the requirements of intended buyers.",
+      items: [
+        "Production planning and seasonal scheduling.",
+        "Access to quality agricultural inputs through suppliers.",
+        "Mechanisation and land preparation services.",
+        "Technical guidance and production monitoring.",
+        "Harvest planning and post-harvest management.",
+        "Coordination around anticipated buyer demand.",
+      ],
+      closing: "Our objective is to reduce the disconnect between what farmers produce and what the market needs.",
+    },
+    aggregation: {
+      intro:
+        "Harvesting maize is only one part of the journey. Preserving quality, consolidating volumes and ensuring timely delivery are equally important. AgriXpert seeks to facilitate structured aggregation arrangements that bring together maize from different producers to meet commercial purchasing requirements.",
+      items: [
+        "Farmer-level commodity collection.",
+        "Weighing and volume verification.",
+        "Cleaning and grading.",
+        "Moisture assessment and appropriate drying.",
+        "Safe storage and inventory management.",
+        "Coordinated transportation and delivery.",
+      ],
+      closing: "Through strategic partnerships, we aim to strengthen the infrastructure connecting production communities to commercial markets.",
+    },
+    quality: {
+      intro: "Quality is essential to building trust between farmers, suppliers, processors and buyers. AgriXpert intends to coordinate maize sourcing around agreed buyer specifications, including:",
+      groups: [
+        {
+          items: [
+            "Moisture content.",
+            "Grain cleanliness.",
+            "Foreign matter and impurities.",
+            "Damaged and discoloured grains.",
+            "Pest infestation.",
+            "Grain condition and storage suitability.",
+          ],
+        },
+      ],
+      closing: "Final acceptance criteria will be determined by applicable standards and individual buyer requirements.",
+    },
+    markets: {
+      intro: "Maize creates opportunities across several commercial markets. AgriXpert seeks to connect aggregated maize supplies to:",
+      items: [
+        { label: "Food processing", body: "Mills, flour producers and food manufacturers." },
+        { label: "Poultry feed manufacturing", body: "Feed producers requiring dependable maize supplies." },
+        { label: "Livestock feed", body: "Businesses producing animal feed and related products." },
+        { label: "Institutional markets", body: "Organisations requiring maize for structured food procurement." },
+        { label: "Commodity trading", body: "Traders and distributors supplying domestic markets." },
+      ],
+      closing: "By connecting production to these markets, AgriXpert seeks to create commercial opportunities for farmers while improving sourcing reliability for buyers.",
+    },
+    partnerships: {
+      intro: "We welcome partnerships with:",
+      items: [
+        "Maize farmers and cooperatives.",
+        "Poultry feed manufacturers.",
+        "Food processing companies.",
+        "Commodity traders.",
+        "Warehouse and storage operators.",
+        "Financial institutions.",
+        "Agricultural technology and mechanisation providers.",
+        "Institutional commodity buyers.",
+      ],
+    },
+    closing: {
+      headline: "Let's Build a Stronger Maize Supply Chain.",
+      body: "Are you a farmer seeking reliable market opportunities? A processor looking for dependable maize supplies? Or an investor interested in agricultural aggregation and storage?",
+    },
+  },
+
+  soybeans: {
+    slug: "soybeans",
+    name: "Soybeans",
+    tagline: "Connecting Farmers to the Growing Demand for Protein, Feed and Industrial Raw Materials.",
+    heroImageKey: "soybeanField",
+    overview: {
+      intro: "Unlocking the Commercial Potential of Soybeans",
+      paragraphs: [
+        "Soybeans are an important agricultural commodity with applications extending beyond traditional crop production. They provide raw materials for animal feed manufacturing, edible oil processing, food production and other industrial applications.",
+        "As demand for poultry feed, livestock nutrition and processed food products creates opportunities across agricultural markets, soybeans offer an important entry point for commercially coordinated agricultural production. However, the opportunity depends on connecting farmers to reliable markets, ensuring consistent quality and coordinating production with the requirements of processors and industrial buyers.",
+        "AgriXpert seeks to build a structured soybean supply chain that connects producers, aggregators, processors and commercial buyers. Our vision is to make soybean production more market-responsive while improving the reliability of commodity sourcing.",
+      ],
+    },
+    sourcing: {
+      intro: "AgriXpert intends to develop soybean sourcing networks in suitable production communities, prioritising areas with agricultural potential, farmer participation and access to commercial markets.",
+      factors: [
+        "Suitable agroecological conditions.",
+        "Farmer production capacity.",
+        "Seasonal production patterns.",
+        "Access to aggregation facilities.",
+        "Transportation and market connectivity.",
+        "Proximity to feed manufacturers and processors.",
+      ],
+      note: "Specific production locations will be confirmed through field assessments and sourcing partnerships.",
+    },
+    farmerNetwork: {
+      intro: "A competitive soybean industry requires organised farmers and dependable supply relationships. AgriXpert seeks to engage smallholder farmers, farmer cooperatives, commercial producers, input suppliers and agricultural service providers.",
+      groups: [],
+      closing: "We aim to create a coordinated network where farmers understand market expectations before production begins. This will help establish stronger relationships between production communities and commercial buyers.",
+    },
+    coordination: {
+      intro: "AgriXpert will promote market-oriented soybean production through:",
+      items: [
+        "Seasonal production planning.",
+        "Improved access to suitable seeds and inputs.",
+        "Mechanisation and farm service coordination.",
+        "Technical guidance on crop management.",
+        "Production monitoring.",
+        "Harvest scheduling.",
+        "Coordination with anticipated buyer demand.",
+      ],
+      closing: "Our objective is to improve production consistency and create a more dependable supply pipeline for commercial markets.",
+    },
+    aggregation: {
+      intro: "Soybeans require appropriate harvesting, drying, handling and storage to preserve their quality and commercial value. AgriXpert seeks to facilitate aggregation systems that consolidate soybean volumes from multiple farmers.",
+      items: [
+        "Commodity collection and weighing.",
+        "Cleaning and grading.",
+        "Moisture assessment.",
+        "Removal of foreign materials.",
+        "Appropriate storage arrangements.",
+        "Inventory monitoring.",
+        "Transportation coordination.",
+      ],
+      closing: "These activities will help buyers access more organised supplies while creating opportunities for farmers to participate in larger commercial transactions.",
+    },
+    quality: {
+      intro: "AgriXpert intends to coordinate soybean sourcing according to agreed commercial specifications. Key quality considerations include:",
+      groups: [
+        {
+          items: [
+            "Moisture content.",
+            "Grain cleanliness.",
+            "Foreign matter.",
+            "Damaged and discoloured grains.",
+            "Pest infestation.",
+            "Variety and suitability for intended processing.",
+            "Storage condition.",
+          ],
+        },
+      ],
+      closing: "Final specifications will be aligned with buyer requirements and applicable standards.",
+    },
+    markets: {
+      intro: "Soybeans offer opportunities across several interconnected industries.",
+      items: [
+        { label: "Animal feed manufacturing", body: "Soybean meal is an important protein ingredient in poultry and livestock feed." },
+        { label: "Edible oil processing", body: "Soybeans can be processed into vegetable oil." },
+        { label: "Food processing", body: "Soybeans provide raw materials for soy-based food products." },
+        { label: "Industrial applications", body: "Soybean derivatives serve different food and manufacturing applications." },
+        { label: "Commodity trading", body: "Aggregated soybeans can supply domestic processors and other commercial markets." },
+      ],
+      closing: "AgriXpert aims to connect farmers to these opportunities through coordinated production, aggregation and buyer relationships.",
+    },
+    partnerships: {
+      intro: "We invite collaboration with:",
+      items: [
+        "Soybean farmers and cooperatives.",
+        "Poultry and livestock feed manufacturers.",
+        "Soybean oil processors.",
+        "Food manufacturing companies.",
+        "Commodity traders.",
+        "Agricultural input suppliers.",
+        "Storage and logistics providers.",
+        "Agricultural finance institutions.",
+      ],
+    },
+    closing: {
+      headline: "Let's Unlock the Value of Soybeans Together.",
+      body: "Whether you want to cultivate soybeans, source raw materials, process soybean products or invest in agricultural supply chains, AgriXpert provides a platform for exploring commercial collaboration.",
+    },
+  },
+
+  rice: {
+    slug: "rice",
+    name: "Rice",
+    tagline: "From Paddy Fields to Quality Rice on Every Table.",
+    heroImageKey: "ricePaddy",
+    overview: {
+      intro: "Building a More Connected Rice Economy",
+      paragraphs: [
+        "Rice is an important staple food with significant commercial opportunities across production, aggregation, milling, packaging, distribution and institutional supply. The rice industry presents opportunities for farmers, millers, distributors, retailers and food businesses.",
+        "Yet, building a competitive rice supply chain requires coordinated production, effective post-harvest handling, reliable milling arrangements and consistent product quality.",
+        "AgriXpert seeks to strengthen the connections between rice farmers, aggregators, processors and commercial markets. Our ambition is to develop a structured rice value chain that supports local production, strengthens commercial relationships and creates opportunities for value addition.",
+      ],
+    },
+    sourcing: {
+      intro: "AgriXpert seeks to establish sourcing relationships with rice farmers and production groups in suitable rice-growing communities.",
+      factors: [
+        "Irrigated and rain-fed production opportunities.",
+        "Access to water and agricultural infrastructure.",
+        "Farmer production capacity.",
+        "Paddy availability and seasonal cycles.",
+        "Proximity to milling facilities.",
+        "Access to institutional and commercial buyers.",
+      ],
+      note: "Production locations will be confirmed through sourcing assessments and farmer partnerships.",
+    },
+    farmerNetwork: {
+      intro: "A reliable rice supply chain begins with farmers who can produce quality paddy consistently. AgriXpert intends to work with:",
+      groups: [
+        "Individual rice farmers.",
+        "Farmer cooperatives.",
+        "Irrigation-based farmer groups.",
+        "Commercial rice producers.",
+        "Agricultural input suppliers.",
+        "Mechanisation providers.",
+        "Rice millers and aggregators.",
+      ],
+      closing: "Our approach is to build relationships that connect farmers with the wider rice industry.",
+    },
+    coordination: {
+      intro: "Rice production requires careful coordination of land preparation, water management, planting, crop maintenance and harvesting. AgriXpert aims to support production through:",
+      items: [
+        "Seasonal production planning.",
+        "Mechanisation and land preparation services.",
+        "Coordination of quality seeds and agricultural inputs.",
+        "Irrigation and water-management support through service partners.",
+        "Technical production guidance.",
+        "Harvest scheduling.",
+        "Post-harvest management.",
+      ],
+      closing: "By coordinating production with anticipated demand, we seek to create more predictable commercial supply arrangements.",
+    },
+    aggregation: {
+      intro: "The journey from paddy harvesting to market-ready rice requires appropriate handling and processing. AgriXpert intends to coordinate:",
+      items: [
+        "Paddy collection.",
+        "Weighing and volume verification.",
+        "Drying and moisture assessment.",
+        "Temporary storage.",
+        "Cleaning and grading.",
+        "Transportation to milling facilities.",
+        "Inventory and delivery management.",
+      ],
+      closing: "Strategic relationships with millers and warehouse operators will be important to this model.",
+    },
+    quality: {
+      intro: "Rice quality determines its acceptance in food markets, institutional procurement and retail distribution. Key quality considerations include:",
+      groups: [
+        {
+          items: [
+            "Moisture content.",
+            "Grain cleanliness.",
+            "Broken grain percentage.",
+            "Foreign matter.",
+            "Grain uniformity.",
+            "Discolouration.",
+            "Milling recovery.",
+            "Packaging and storage conditions.",
+          ],
+        },
+      ],
+      closing: "Final specifications will be established according to applicable standards and buyer requirements.",
+    },
+    markets: {
+      intro: "Rice creates opportunities across multiple commercial segments.",
+      items: [
+        { label: "Rice milling", body: "Converting paddy into milled rice for commercial distribution." },
+        { label: "Packaging and branding", body: "Developing packaged rice products for retailers and institutional buyers." },
+        { label: "Institutional supply", body: "Supplying schools, hospitality businesses, caterers and other bulk purchasers." },
+        { label: "Wholesale distribution", body: "Supplying wholesalers, distributors and retailers." },
+        { label: "By-product utilisation", body: "Exploring commercial uses for rice bran, husks and other milling by-products." },
+      ],
+      closing: "AgriXpert seeks to connect local production to these opportunities through structured sourcing and processing partnerships.",
+    },
+    partnerships: {
+      intro: "We welcome partnerships with:",
+      items: [
+        "Rice farmers and cooperatives.",
+        "Irrigation schemes.",
+        "Rice millers.",
+        "Packaging companies.",
+        "Institutional food buyers.",
+        "Wholesale distributors.",
+        "Warehouse operators.",
+        "Agricultural financial institutions.",
+      ],
+    },
+    closing: {
+      headline: "Let's Connect Rice Farmers to Bigger Markets.",
+      body: "Are you producing rice, operating a rice mill, distributing packaged rice or sourcing rice for institutional consumption? AgriXpert welcomes your participation.",
+    },
+  },
+
+  groundnuts: {
+    slug: "groundnuts",
+    name: "Groundnuts",
+    tagline: "Transforming Groundnuts into Food, Industrial Products and Commercial Opportunities.",
+    heroImageKey: "groundnutsPile",
+    overview: {
+      intro: "Beyond the Harvest",
+      paragraphs: [
+        "Groundnuts are an important agricultural commodity with opportunities in food processing, edible oil production, snacks, confectionery and other agro-industrial applications. From smallholder farms to processing facilities and commercial markets, groundnuts support a diverse network of agricultural and business activities.",
+        "However, realising their commercial potential requires improved production coordination, appropriate drying and storage, quality management and dependable market connections.",
+        "AgriXpert seeks to connect groundnut farmers with aggregators, processors and commercial buyers through a coordinated value-chain approach. Our ambition is to create opportunities that allow farmers to participate more effectively in the commercial groundnut economy.",
+      ],
+    },
+    sourcing: {
+      intro: "AgriXpert intends to build sourcing relationships in suitable groundnut-producing communities.",
+      factors: [
+        "Production potential.",
+        "Farmer networks and cooperative structures.",
+        "Seasonal availability.",
+        "Access to drying and storage facilities.",
+        "Transportation infrastructure.",
+        "Proximity to processors and commodity buyers.",
+      ],
+      note: "Specific sourcing locations will be confirmed through production assessments and supplier partnerships.",
+    },
+    farmerNetwork: {
+      intro: "AgriXpert seeks to engage groundnut farmers, farmer cooperatives, commercial producers, input suppliers, aggregators and processors.",
+      groups: [],
+      closing: "We aim to establish a network that supports production planning, commodity consolidation and stronger commercial relationships. Our goal is to help farmers access more organised markets while enabling processors to source suitable raw materials.",
+    },
+    coordination: {
+      intro: "Groundnut production requires attention to seed quality, soil conditions, crop management, harvesting and drying. AgriXpert seeks to coordinate:",
+      items: [
+        "Seasonal production planning.",
+        "Access to suitable seeds and inputs.",
+        "Mechanisation and farm services.",
+        "Technical production guidance.",
+        "Harvest scheduling.",
+        "Drying and post-harvest management.",
+        "Coordination with anticipated market demand.",
+      ],
+      closing: "This approach is intended to improve production consistency and strengthen the commercial value of harvested groundnuts.",
+    },
+    aggregation: {
+      intro: "Proper handling is essential to preserving groundnut quality and reducing post-harvest risks. AgriXpert intends to facilitate:",
+      items: [
+        "Farmer-level commodity collection.",
+        "Weighing and volume verification.",
+        "Drying and moisture assessment.",
+        "Cleaning and sorting.",
+        "Removal of damaged and unsuitable nuts.",
+        "Appropriate storage.",
+        "Transportation to processors and buyers.",
+      ],
+      closing: "Particular attention will be given to moisture management and aflatoxin risk prevention.",
+    },
+    quality: {
+      intro: "Quality assurance is critical, particularly where groundnuts are destined for food and oil processing. Key quality considerations include:",
+      groups: [
+        {
+          items: [
+            "Moisture content.",
+            "Foreign matter.",
+            "Broken and damaged kernels.",
+            "Pest infestation.",
+            "Mould contamination.",
+            "Aflatoxin levels.",
+            "Kernel size and uniformity.",
+            "Storage conditions.",
+          ],
+        },
+      ],
+      closing: "Applicable food safety standards and buyer specifications will guide final quality requirements.",
+    },
+    markets: {
+      intro: "Groundnuts create opportunities across several commercial industries.",
+      items: [
+        { label: "Groundnut oil production", body: "Processing raw groundnuts into edible oil." },
+        { label: "Groundnut paste and peanut butter", body: "Supplying raw materials for packaged food products." },
+        { label: "Snacks and confectionery", body: "Supporting roasted groundnut and other food businesses." },
+        { label: "Food manufacturing", body: "Supplying processors requiring groundnut ingredients." },
+        { label: "Commodity trading", body: "Supplying wholesalers, processors and distributors." },
+        { label: "By-product utilisation", body: "Exploring commercial applications for groundnut cake in livestock feed, subject to appropriate processing and safety requirements." },
+      ],
+      closing: "AgriXpert aims to facilitate commercial connections across these market segments.",
+    },
+    partnerships: {
+      intro: "We welcome collaboration with:",
+      items: [
+        "Groundnut farmers and cooperatives.",
+        "Oil processing companies.",
+        "Peanut butter manufacturers.",
+        "Food processors.",
+        "Commodity aggregators.",
+        "Wholesale distributors.",
+        "Storage and logistics operators.",
+        "Agricultural finance institutions.",
+      ],
+    },
+    closing: {
+      headline: "Let's Turn Groundnut Production into Greater Commercial Value.",
+      body: "Are you a groundnut farmer, processor, trader or investor looking for structured agricultural opportunities? Let's build a stronger and more connected groundnut value chain.",
+    },
+  },
+
+  shea: {
+    slug: "shea",
+    name: "Shea",
+    tagline: "From Northern Ghana's Shea Resources to Global Market Opportunities.",
+    heroImageKey: "sheaButter",
+    overview: {
+      intro: "Creating Greater Value from Shea",
+      paragraphs: [
+        "Shea is an important natural resource supporting livelihoods, rural enterprise development, women's economic participation and agro-industrial opportunities across Northern Ghana and the wider West African region.",
+        "From the collection of shea nuts to processing and the production of shea butter and other derivatives, the value chain presents opportunities for collectors, women's groups, aggregators, processors, manufacturers and exporters.",
+        "Yet, the commercial potential of shea depends on organised sourcing, responsible resource management, quality assurance, appropriate processing and reliable market connections. AgriXpert seeks to strengthen the shea value chain by connecting collectors, women's groups, aggregators and processors to commercial markets. Our ambition is to support a more organised and value-driven shea industry that recognises the contribution of rural producers while unlocking opportunities for local processing and trade.",
+      ],
+    },
+    sourcing: {
+      intro: "AgriXpert intends to develop sourcing networks across shea-producing communities in Northern Ghana and other suitable locations.",
+      factors: [
+        "Shea tree distribution and resource availability.",
+        "Seasonal nut collection patterns.",
+        "Community and women's group participation.",
+        "Existing collection and aggregation structures.",
+        "Processing infrastructure.",
+        "Market access and transportation arrangements.",
+      ],
+      note: "Specific sourcing communities will be confirmed through community engagement and supply-chain assessments.",
+    },
+    farmerNetwork: {
+      intro: "Women play a significant role in shea collection, processing and commercial activities. AgriXpert aims to strengthen relationships with:",
+      groups: [
+        "Women shea collectors and processors.",
+        "Community-based women's groups.",
+        "Shea cooperatives.",
+        "Nut aggregators.",
+        "Shea butter processors.",
+        "Raw material suppliers.",
+        "Local and international buyers.",
+      ],
+      closing: "Our approach seeks to promote responsible sourcing, stronger commercial relationships and opportunities for greater local value addition.",
+    },
+    coordination: {
+      intro: "Unlike conventional annual crop production, shea sourcing involves seasonal collection from naturally occurring shea trees. AgriXpert's coordination model will therefore focus on:",
+      items: [
+        "Community-level collector mobilisation.",
+        "Seasonal collection planning.",
+        "Responsible harvesting and resource management.",
+        "Training on nut selection and handling.",
+        "Coordination of collection points.",
+        "Quality management.",
+        "Supply planning around processor requirements.",
+      ],
+      closing: "Our objective is to build a more organised sourcing network that connects community-level collectors to commercial buyers.",
+    },
+    aggregation: {
+      intro: "The quality of shea products begins with how nuts are collected, handled, processed and stored. AgriXpert seeks to coordinate:",
+      items: [
+        "Community-level nut collection.",
+        "Sorting and removal of unsuitable nuts.",
+        "Drying and moisture management.",
+        "Weighing and volume verification.",
+        "Aggregation and inventory management.",
+        "Appropriate storage.",
+        "Transportation to processing facilities.",
+      ],
+      closing: "These arrangements will help improve sourcing consistency and support quality-focused processing.",
+    },
+    quality: {
+      intro: "Shea quality requirements vary according to whether the buyer requires raw shea nuts, shea butter or other derivatives. Key considerations include:",
+      groups: [
+        {
+          label: "Raw shea nuts",
+          items: ["Moisture content.", "Cleanliness.", "Nut condition.", "Foreign matter.", "Pest and mould contamination."],
+        },
+        {
+          label: "Shea butter",
+          items: [
+            "Colour and appearance.",
+            "Odour.",
+            "Free fatty acid levels.",
+            "Peroxide value.",
+            "Moisture and impurities.",
+            "Applicable food, cosmetic or industrial specifications.",
+          ],
+        },
+      ],
+      closing: "Final specifications will be agreed with processors and buyers.",
+    },
+    markets: {
+      intro: "Shea offers opportunities across domestic, regional and international markets.",
+      items: [
+        { label: "Shea butter production", body: "Processing nuts into butter for commercial markets." },
+        { label: "Cosmetics and personal care", body: "Supplying raw materials for soaps, creams, lotions and related products." },
+        { label: "Food manufacturing", body: "Exploring food-grade shea butter applications where permitted by applicable standards." },
+        { label: "Industrial applications", body: "Supplying shea derivatives for specialised manufacturing uses." },
+        { label: "Export markets", body: "Connecting quality-assured shea products to regional and international buyers." },
+      ],
+      closing: "AgriXpert aims to promote stronger commercial connections between community-level sourcing and higher-value processing opportunities.",
+    },
+    partnerships: {
+      intro: "We welcome partnerships with:",
+      items: [
+        "Shea collectors and women's groups.",
+        "Shea cooperatives.",
+        "Shea butter processors.",
+        "Cosmetic manufacturers.",
+        "Food processing companies.",
+        "Exporters and international buyers.",
+        "Responsible sourcing organisations.",
+        "Financial institutions.",
+        "Processing equipment suppliers.",
+      ],
+    },
+    closing: {
+      headline: "Let's Create More Value from Shea.",
+      body: "Are you a shea collector, women's group, processor, manufacturer or international buyer? Partner with AgriXpert to strengthen responsible sourcing, local value addition and commercial market access.",
+    },
+  },
+
+  vegetables: {
+    slug: "vegetables",
+    name: "Vegetables",
+    tagline: "Growing Fresh Produce. Connecting Farmers to Markets. Reducing Supply Gaps.",
+    heroImageKey: "vegetableHarvest",
+    overview: {
+      intro: "Building a More Reliable Fresh Produce Supply Chain",
+      paragraphs: [
+        "Vegetables are essential to food security, nutrition, household consumption and commercial food distribution. From tomatoes, onions and peppers to leafy vegetables and other horticultural products, the vegetable industry supports farmers, traders, wholesalers, retailers, restaurants, food processors and institutional buyers.",
+        "However, vegetable markets are highly sensitive to seasonality, perishability, inconsistent supply, post-harvest losses and price fluctuations. Farmers may produce without having dependable buyers, while commercial buyers may struggle to secure consistent volumes of quality produce when needed.",
+        "AgriXpert seeks to bridge this gap by developing a more coordinated, market-led vegetable supply chain. We aim to connect vegetable farmers to commercial markets through production planning, aggregation, quality management, storage coordination and structured supply arrangements. Our ambition is to move beyond fragmented production towards a more predictable and commercially responsive fresh produce system.",
+      ],
+    },
+    sourcing: {
+      intro: "AgriXpert intends to establish sourcing relationships with vegetable farmers and producer groups in suitable production communities.",
+      factors: [
+        "Availability of suitable land and water.",
+        "Irrigation and dry-season production opportunities.",
+        "Proximity to major consumption centres.",
+        "Farmer production capacity.",
+        "Seasonal supply patterns.",
+        "Access to aggregation and handling facilities.",
+        "Transportation and market connectivity.",
+      ],
+      note: "Priority crops may include tomatoes, onions, pepper, cabbage, okra, garden eggs, leafy vegetables and other commercially demanded horticultural crops. Specific sourcing locations will be confirmed through production assessments and buyer demand analysis.",
+    },
+    farmerNetwork: {
+      intro: "A dependable vegetable supply chain requires close coordination between farmers, input suppliers, aggregators, transporters and buyers. AgriXpert seeks to build a network of:",
+      groups: [
+        "Smallholder vegetable farmers.",
+        "Commercial horticultural producers.",
+        "Irrigation-based farmer groups.",
+        "Farmer cooperatives.",
+        "Agricultural input suppliers.",
+        "Mechanisation and irrigation service providers.",
+        "Produce aggregators.",
+        "Wholesale and institutional buyers.",
+      ],
+      closing: "Our goal is to build relationships that connect production decisions to actual market requirements.",
+    },
+    coordination: {
+      intro: "Vegetable production must be coordinated around crop cycles, seasonal demand, water availability and market requirements. AgriXpert aims to support farmers through:",
+      items: [
+        "Market-informed production planning.",
+        "Crop selection based on buyer demand.",
+        "Access to suitable seeds and agricultural inputs.",
+        "Irrigation and mechanisation service coordination.",
+        "Good agricultural practices.",
+        "Integrated pest management guidance.",
+        "Production monitoring.",
+        "Harvest scheduling.",
+        "Coordination of anticipated market volumes.",
+      ],
+      closing: "Our approach seeks to reduce mismatches between production and market demand while improving the consistency of fresh produce supply.",
+    },
+    aggregation: {
+      intro: "Vegetables are highly perishable, making timely harvesting, handling and transportation essential. AgriXpert seeks to coordinate a supply system that reduces delays between harvesting and delivery.",
+      items: [
+        "Farmer-level produce collection.",
+        "Sorting and grading.",
+        "Quality inspection.",
+        "Appropriate packaging and handling.",
+        "Temporary storage and cooling partnerships where feasible.",
+        "Inventory and order management.",
+        "Transportation coordination.",
+        "Timely delivery to buyers.",
+      ],
+      closing: "The emphasis is on reducing avoidable post-harvest losses while maintaining freshness and product quality.",
+    },
+    quality: {
+      intro: "Fresh produce quality depends on the commodity, intended market and buyer requirements. Our quality management approach will consider:",
+      groups: [
+        {
+          items: [
+            "Freshness and maturity.",
+            "Size and uniformity.",
+            "Colour and appearance.",
+            "Physical damage.",
+            "Pest and disease damage.",
+            "Cleanliness.",
+            "Safe handling and packaging.",
+            "Pesticide residue compliance.",
+            "Traceability and food safety requirements.",
+          ],
+        },
+      ],
+      closing: "Specifications will be agreed with buyers and aligned with applicable food safety standards.",
+    },
+    markets: {
+      intro: "Vegetables offer opportunities across fresh produce distribution and agro-processing.",
+      items: [
+        { label: "Wholesale markets", body: "Supplying wholesalers and produce distributors." },
+        { label: "Retail markets", body: "Supplying supermarkets, shops and fresh produce retailers." },
+        { label: "Hospitality and food services", body: "Supplying hotels, restaurants, caterers and institutional kitchens." },
+        { label: "Institutional procurement", body: "Supporting organised food procurement requirements." },
+        { label: "Food processing", body: "Supplying raw materials for tomato paste, sauces, dried vegetables, frozen products and other processed foods." },
+        { label: "Regional trade", body: "Exploring commercial opportunities in regional markets where quality, logistics and market requirements can be met." },
+      ],
+      closing: "AgriXpert seeks to build relationships that connect farmers to these market opportunities through more organised sourcing and supply arrangements.",
+    },
+    partnerships: {
+      intro: "We welcome collaboration with:",
+      items: [
+        "Vegetable farmers and cooperatives.",
+        "Irrigation service providers.",
+        "Agricultural input suppliers.",
+        "Produce aggregators.",
+        "Cold storage and logistics companies.",
+        "Supermarkets and retailers.",
+        "Hotels and restaurants.",
+        "Food processing companies.",
+        "Institutional buyers.",
+        "Agricultural finance institutions.",
+      ],
+    },
+    closing: {
+      headline: "Let's Connect Vegetable Farmers to Reliable Markets.",
+      body: "Are you a vegetable farmer looking for dependable buyers? A retailer or processor seeking consistent fresh produce? Or an investor interested in irrigation, aggregation and post-harvest infrastructure? AgriXpert welcomes your partnership.",
+    },
+  },
+};
