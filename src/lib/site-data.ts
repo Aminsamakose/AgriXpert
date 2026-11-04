@@ -12,8 +12,8 @@ export const stockImages = {
     alt: "A farmer standing in a cornfield",
   },
   aggregationBags: {
-    src: "https://images.unsplash.com/photo-1689268662934-24d1636904fc?fm=jpg&q=80&w=1600&auto=format&fit=crop",
-    alt: "Sacks of aggregated commodity ready for market",
+    src: "https://images.unsplash.com/photo-1774946103680-3d34a461a581?fm=jpg&q=80&w=1600&auto=format&fit=crop",
+    alt: "Neatly stacked sacks of aggregated commodity in a warehouse, ready for market",
   },
   teamMeeting: {
     src: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?fm=jpg&q=80&w=2400&auto=format&fit=crop",
