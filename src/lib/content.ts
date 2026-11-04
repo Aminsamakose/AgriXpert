@@ -26,3 +26,42 @@ export function pick(content: SiteContentMap, key: string, fallback: string): st
   const value = content[key];
   return value && value.trim().length > 0 ? value : fallback;
 }
+
+/** Bulk-fetches all page_content overrides of one entity type, keyed by slug. */
+export async function getAllPageContentOverrides<T>(
+  entityType: "value_chain" | "solution"
+): Promise<Record<string, T>> {
+  try {
+    const { data, error } = await supabase.from("page_content").select("slug, data").eq("entity_type", entityType);
+    if (error || !data) return {};
+    const map: Record<string, T> = {};
+    for (const row of data) map[row.slug as string] = row.data as T;
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Full structured content (JSON) for a value-chain or solution detail page,
+ * stored in the `page_content` table. Returns null if there's no override
+ * yet (or Supabase is unreachable), so the page can fall back to its
+ * hardcoded default content.
+ */
+export async function getPageContentOverride<T>(
+  entityType: "value_chain" | "solution",
+  slug: string
+): Promise<T | null> {
+  try {
+    const { data, error } = await supabase
+      .from("page_content")
+      .select("data")
+      .eq("entity_type", entityType)
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.data as T;
+  } catch {
+    return null;
+  }
+}

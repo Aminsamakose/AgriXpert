@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { stockImages } from "@/lib/site-data";
-import { solutionsList } from "@/lib/solutions-content";
-import { getSiteContent, pick } from "@/lib/content";
+import { solutionsList, type SolutionContent } from "@/lib/solutions-content";
+import { getSiteContent, pick, getAllPageContentOverrides } from "@/lib/content";
 
 
 export const instant = false;
@@ -33,6 +33,7 @@ const audiences = [
 
 export default async function SolutionsPage() {
   const content = await getSiteContent();
+  const overrides = await getAllPageContentOverrides<SolutionContent>("solution");
   return (
     <>
       <PageHero
@@ -49,7 +50,8 @@ export default async function SolutionsPage() {
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {solutionsList.map((s) => {
-            const image = stockImages[s.heroImageKey];
+            const sContent = overrides[s.slug] ?? s;
+            const image = stockImages[sContent.heroImageKey as keyof typeof stockImages] ?? stockImages.teamMeeting;
             return (
               <Link
                 key={s.slug}
@@ -65,12 +67,12 @@ export default async function SolutionsPage() {
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <span className="absolute left-4 top-4 rounded-full bg-forest-dark/80 px-3 py-1 font-heading text-xs font-bold text-natural-white">
-                    {s.number}
+                    {sContent.number}
                   </span>
                 </div>
                 <div className="p-6">
-                  <h2 className="font-heading text-lg font-semibold text-forest">{s.name}</h2>
-                  <p className="mt-2 text-sm text-forest-dark/70">{s.tagline}</p>
+                  <h2 className="font-heading text-lg font-semibold text-forest">{sContent.name}</h2>
+                  <p className="mt-2 text-sm text-forest-dark/70">{sContent.tagline}</p>
                   <span className="mt-4 inline-block text-sm font-semibold text-agri-green">
                     View solution &rarr;
                   </span>

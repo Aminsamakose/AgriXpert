@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { valueChains, stockImages } from "@/lib/site-data";
-import { valueChainContent } from "@/lib/value-chain-content";
-import { getSiteContent, pick } from "@/lib/content";
+import { valueChainContent, type ValueChainContent } from "@/lib/value-chain-content";
+import { getSiteContent, pick, getAllPageContentOverrides } from "@/lib/content";
 
 
 export const instant = false;
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 export default async function ValueChainsPage() {
   const content = await getSiteContent();
+  const overrides = await getAllPageContentOverrides<ValueChainContent>("value_chain");
   return (
     <>
       <PageHero
@@ -30,8 +31,10 @@ export default async function ValueChainsPage() {
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {valueChains.map((vc) => {
-            const content = valueChainContent[vc.slug];
-            const image = content ? stockImages[content.heroImageKey] : undefined;
+            const vcContent = overrides[vc.slug] ?? valueChainContent[vc.slug];
+            const image = vcContent
+              ? stockImages[vcContent.heroImageKey as keyof typeof stockImages]
+              : undefined;
             return (
               <Link
                 key={vc.slug}
@@ -50,8 +53,8 @@ export default async function ValueChainsPage() {
                   </div>
                 )}
                 <div className="p-6">
-                  <h2 className="font-heading text-lg font-semibold text-forest">{vc.name}</h2>
-                  <p className="mt-2 text-sm text-forest-dark/70">{content?.tagline ?? vc.body}</p>
+                  <h2 className="font-heading text-lg font-semibold text-forest">{vcContent?.name ?? vc.name}</h2>
+                  <p className="mt-2 text-sm text-forest-dark/70">{vcContent?.tagline ?? vc.body}</p>
                   <span className="mt-4 inline-block text-sm font-semibold text-agri-green">
                     View value chain &rarr;
                   </span>

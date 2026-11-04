@@ -4,8 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ContentManager from "@/components/admin/ContentManager";
+import PageContentManager from "@/components/admin/PageContentManager";
+import { valueChains, stockImages } from "@/lib/site-data";
+import { solutionsList } from "@/lib/solutions-content";
 
-type Tab = "enquiries" | "farmers" | "buyers" | "suppliers" | "content";
+type Tab = "enquiries" | "farmers" | "buyers" | "suppliers" | "content" | "value-chains" | "solutions";
+
+const stockImageOptions = Object.entries(stockImages).map(([key, img]) => ({ key, src: img.src }));
 
 type Enquiry = {
   id: string;
@@ -63,6 +68,8 @@ const tabs: { key: Tab; label: string }[] = [
   { key: "buyers", label: "Buyers" },
   { key: "suppliers", label: "Suppliers" },
   { key: "content", label: "Site Content" },
+  { key: "value-chains", label: "Value Chains" },
+  { key: "solutions", label: "Solutions" },
 ];
 
 function formatDate(iso: string) {
@@ -109,7 +116,7 @@ export default function AdminDashboardPage() {
   }, [checkAuth]);
 
   const loadTab = useCallback(async (tab: Tab) => {
-    if (tab === "content") return;
+    if (tab === "content" || tab === "value-chains" || tab === "solutions") return;
     setLoading(true);
     setError(null);
 
@@ -391,6 +398,20 @@ export default function AdminDashboardPage() {
       )}
 
       {activeTab === "content" && <ContentManager />}
+      {activeTab === "value-chains" && (
+        <PageContentManager
+          entityType="value_chain"
+          items={valueChains.map((vc) => ({ slug: vc.slug, label: vc.name }))}
+          stockImageOptions={stockImageOptions}
+        />
+      )}
+      {activeTab === "solutions" && (
+        <PageContentManager
+          entityType="solution"
+          items={solutionsList.map((s) => ({ slug: s.slug, label: s.name }))}
+          stockImageOptions={stockImageOptions}
+        />
+      )}
     </section>
   );
 }

@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import SolutionCtas from "@/components/SolutionCtas";
 import { stockImages } from "@/lib/site-data";
-import { solutionsContent } from "@/lib/solutions-content";
+import { solutionsContent, type SolutionContent } from "@/lib/solutions-content";
+import { getPageContentOverride } from "@/lib/content";
+
+export const instant = false;
 
 export function generateStaticParams() {
   return Object.keys(solutionsContent).map((slug) => ({ slug }));
@@ -39,13 +42,14 @@ export default async function SolutionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const content = solutionsContent[slug];
+  const override = await getPageContentOverride<SolutionContent>("solution", slug);
+  const content = override ?? solutionsContent[slug];
 
   if (!content) {
     notFound();
   }
 
-  const heroImage = stockImages[content.heroImageKey];
+  const heroImage = stockImages[content.heroImageKey as keyof typeof stockImages] ?? stockImages.teamMeeting;
 
   return (
     <>

@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import ValueChainCtas from "@/components/ValueChainCtas";
 import { valueChains, stockImages } from "@/lib/site-data";
-import { valueChainContent } from "@/lib/value-chain-content";
+import { valueChainContent, type ValueChainContent } from "@/lib/value-chain-content";
+import { getPageContentOverride } from "@/lib/content";
+
+export const instant = false;
 
 export function generateStaticParams() {
   return valueChains.map((vc) => ({ slug: vc.slug }));
@@ -40,13 +43,14 @@ export default async function ValueChainPage({
 }) {
   const { slug } = await params;
   const commodity = valueChains.find((vc) => vc.slug === slug);
-  const content = valueChainContent[slug];
+  const override = await getPageContentOverride<ValueChainContent>("value_chain", slug);
+  const content = override ?? valueChainContent[slug];
 
   if (!commodity || !content) {
     notFound();
   }
 
-  const heroImage = stockImages[content.heroImageKey];
+  const heroImage = stockImages[content.heroImageKey as keyof typeof stockImages] ?? stockImages.cropFieldsAerial;
 
   return (
     <>
