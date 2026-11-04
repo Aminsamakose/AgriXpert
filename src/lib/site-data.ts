@@ -71,14 +71,6 @@ export const stockImages = {
     src: "https://images.unsplash.com/photo-1549978113-29eb25c8177f?fm=jpg&q=80&w=2400&auto=format&fit=crop",
     alt: "Close-up of a pile of unshelled groundnuts",
   },
-  sheaButter: {
-    src: "https://images.unsplash.com/photo-1638131163449-70059e10de6a?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-    alt: "Raw shea butter beside packaged shea butter jars",
-  },
-  vegetableHarvest: {
-    src: "https://images.unsplash.com/photo-1671528443617-26b1ecebb66f?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-    alt: "A close-up pile of freshly harvested ripe tomatoes",
-  },
 };
 
 export const navLinks = [
@@ -120,10 +112,6 @@ export const differentiators = [
   {
     title: "Access Integration, Not Infrastructure Duplication",
     body: "Our role is to get farmers and agricultural businesses access to markets, mechanisation, storage, processing, finance and buyers, coordinating this access as one connected relationship rather than leaving farmers to find and negotiate with each specialist provider separately.",
-  },
-  {
-    title: "Shea Sector Relationships",
-    body: "Our leadership's standing engagement with the Global Shea Alliance gives AgriXpert direct access to shea-sector market intelligence, standards and buyer relationships that a general commodity aggregator would need years to build.",
   },
   {
     title: "Enterprise Development Track Record",
@@ -188,8 +176,6 @@ export const valueChains = [
   { name: "Soybeans", slug: "soybeans", body: "Feed manufacturing, oil processing and industrial markets." },
   { name: "Rice", slug: "rice", body: "Production, aggregation, milling and institutional supply." },
   { name: "Groundnuts", slug: "groundnuts", body: "Food processing, oil production and commodity trade." },
-  { name: "Shea", slug: "shea", body: "Raw material sourcing and processing opportunities." },
-  { name: "Vegetables", slug: "vegetables", body: "Fresh produce sourcing and structured supply." },
 ];
 
 export const businessModelSteps = [

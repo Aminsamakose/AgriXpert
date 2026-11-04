@@ -15,7 +15,7 @@ export const metadata: Metadata = pageMetadata({
   image: stockImages.teamMeeting,
 });
 
-const commodities = ["Maize", "Soybeans", "Rice", "Groundnuts", "Shea", "Vegetables"];
+const commodities = ["Maize", "Soybeans", "Rice", "Groundnuts"];
 
 const solutionPillars = [
   {

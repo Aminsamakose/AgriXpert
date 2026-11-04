@@ -465,7 +465,7 @@ export const solutionsContent: Record<string, SolutionContent> = {
           "Handling and loading.",
           "Commodity preservation.",
         ],
-        closing: "For perishable commodities such as vegetables, we aim to explore suitable cold-chain and temperature-management partnerships.",
+        closing: "For moisture-sensitive commodities, we aim to explore suitable storage and temperature-management partnerships.",
       },
       {
         heading: "Inventory Management",
@@ -615,8 +615,6 @@ export const solutionsContent: Record<string, SolutionContent> = {
           "Soybeans: Soybean meal, edible oil and food ingredients.",
           "Rice: Milled rice, packaged rice and milling by-products.",
           "Groundnuts: Groundnut oil, peanut butter and other food products.",
-          "Shea: Shea butter and other shea derivatives.",
-          "Vegetables: Tomato products, sauces, dried vegetables and other processed products.",
         ],
         closing: "Our role is to facilitate commercial connections between raw material suppliers, processors and downstream markets.",
       },
