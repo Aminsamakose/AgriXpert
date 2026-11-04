@@ -112,6 +112,25 @@ export const problems = [
   },
 ];
 
+export const differentiators = [
+  {
+    title: "Northern Ghana Depth, Not a Generic Footprint",
+    body: "Our focus is deliberately narrow: the Northern, Savannah, North East, Upper East and Upper West regions. We build deep operating relationships in these corridors rather than spreading thin across the country.",
+  },
+  {
+    title: "Integration, Not Just Aggregation or Advisory",
+    body: "We are not a trading company that only takes positions in commodities, and we are not an advisory programme that stops at recommendations. We coordinate production, aggregation, mechanisation, storage, processing linkage and market access as one connected model.",
+  },
+  {
+    title: "Shea Sector Relationships",
+    body: "Our leadership's standing engagement with the Global Shea Alliance gives AgriXpert direct access to shea-sector market intelligence, standards and buyer relationships that a general commodity aggregator would need years to build.",
+  },
+  {
+    title: "Enterprise Development Track Record",
+    body: "AgriXpert's model is led by enterprise development practice, not production alone: our leadership has directly supported more than 50 agribusinesses on the operational and commercial fundamentals that make a value chain actually work.",
+  },
+];
+
 export const coreFunctions = [
   "Coordinate agricultural production.",
   "Aggregate and manage agricultural commodities.",

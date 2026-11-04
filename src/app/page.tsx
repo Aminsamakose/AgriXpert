@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   problems,
+  differentiators,
   coreFunctions,
   solutions,
   valueChains,
@@ -110,6 +111,21 @@ export default async function Home() {
               <div key={p.title} className="rounded-2xl border border-forest/10 bg-white p-6 shadow-sm">
                 <h3 className="font-heading text-lg font-semibold text-forest">{p.title}</h3>
                 <p className="mt-3 text-sm text-forest-dark/70">{p.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2b: Why AgriXpert */}
+      <section className="bg-forest-dark py-20 text-natural-white">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <SectionHeading eyebrow="Why AgriXpert" title="What Sets Our Model Apart" variant="dark" center />
+          <div className="mt-12 grid gap-8 sm:grid-cols-2">
+            {differentiators.map((d) => (
+              <div key={d.title} className="rounded-2xl border border-natural-white/15 bg-natural-white/5 p-6">
+                <h3 className="font-heading text-lg font-semibold text-harvest-gold">{d.title}</h3>
+                <p className="mt-3 text-sm text-natural-white/80">{d.body}</p>
               </div>
             ))}
           </div>
