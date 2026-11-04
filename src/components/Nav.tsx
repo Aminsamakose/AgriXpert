@@ -1,12 +1,14 @@
+import Image from "next/image";
 import Link from "next/link";
 import { navLinks, portalCta } from "@/lib/site-data";
+import logo from "../../public/logo.png";
 
 export default function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-forest/10 bg-natural-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:px-10">
-        <Link href="/" className="font-heading text-xl font-bold tracking-tight text-forest">
-          AGRI<span className="text-agri-green">XPERT</span>
+        <Link href="/" className="flex shrink-0 items-center">
+          <Image src={logo} alt="AgriXpert" className="h-9 w-auto" priority />
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">

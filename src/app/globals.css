@@ -4,11 +4,11 @@
   --background: #F4F6F1;
   --foreground: #16281C;
 
-  --color-forest: #174D32;
-  --color-forest-dark: #0E3321;
-  --color-agri-green: #73A942;
-  --color-harvest-gold: #E9B949;
-  --color-natural-white: #F4F6F1;
+  --color-forest: #075421;
+  --color-forest-dark: #053A17;
+  --color-agri-green: #69B42E;
+  --color-harvest-gold: #F58212;
+  --color-natural-white: #FFFFFF;
 }
 
 @theme inline {
