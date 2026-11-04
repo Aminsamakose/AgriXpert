@@ -77,6 +77,7 @@ export const navLinks = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
   { label: "What We Do", href: "/what-we-do" },
+  { label: "Solutions", href: "/solutions" },
   { label: "Value Chains", href: "/value-chains" },
   { label: "For Farmers", href: "/for-farmers" },
   { label: "For Buyers", href: "/for-buyers" },
@@ -156,7 +157,7 @@ export const solutions = [
     body: "Buyer sourcing, offtake facilitation, commodity trading, institutional supply and commercial partnerships.",
     cta: "Explore market solutions",
   },
-].map((s) => ({ ...s, href: `/what-we-do#${s.anchor}` }));
+].map((s) => ({ ...s, href: `/solutions/${s.anchor}` }));
 
 export const valueChains = [
   { name: "Maize", slug: "maize", body: "Food processing, poultry feed and commercial supply." },
@@ -244,13 +245,15 @@ export const footerColumns = [
   {
     heading: "Solutions",
     links: [
-      { label: "Production Coordination", href: "/what-we-do#production-coordination" },
-      { label: "Aggregation & Procurement", href: "/what-we-do#aggregation-procurement" },
-      { label: "Mechanisation & Farm Services", href: "/what-we-do#mechanisation-farm-services" },
-      { label: "Processing & Value Addition", href: "/what-we-do#processing-value-addition" },
+      { label: "Production Coordination", href: "/solutions/production-coordination" },
+      { label: "Aggregation & Procurement", href: "/solutions/aggregation-procurement" },
+      { label: "Mechanisation & Farm Services", href: "/solutions/mechanisation-farm-services" },
+      { label: "Storage & Supply Chain", href: "/solutions/storage-supply-chain" },
+      { label: "Processing & Value Addition", href: "/solutions/processing-value-addition" },
+      { label: "Market Access & Trade", href: "/solutions/market-access-trade" },
     ],
-    // Kept as literal anchors above: these must stay in sync with the `anchor`
-    // field on each entry in `solutions`.
+    // Kept as literal paths above: these must stay in sync with the `anchor`
+    // field on each entry in `solutions` (site-data.ts) / slug in solutions-content.ts.
   },
   {
     heading: "Value Chains",

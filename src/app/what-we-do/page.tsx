@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { solutions, stockImages } from "@/lib/site-data";
 
@@ -20,12 +21,12 @@ export default function WhatWeDoPage() {
             <span className="font-heading text-sm font-bold text-harvest-gold">{s.number}</span>
             <h2 className="mt-2 font-heading text-2xl font-bold text-forest">{s.title}</h2>
             <p className="mt-4 max-w-2xl text-forest-dark/75">{s.body}</p>
-            <a
-              href="/contact"
+            <Link
+              href={s.href}
               className="mt-6 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-natural-white hover:bg-forest-dark"
             >
-              Enquire about this solution
-            </a>
+              View full solution &rarr;
+            </Link>
           </div>
         ))}
       </section>
