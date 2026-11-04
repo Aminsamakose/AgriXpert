@@ -174,6 +174,29 @@ export default function AdminDashboardPage() {
     router.replace("/admin/login");
   }
 
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordStatus, setPasswordStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  async function handleSetPassword() {
+    if (newPassword.length < 8) {
+      setPasswordStatus("error");
+      setPasswordError("Password must be at least 8 characters.");
+      return;
+    }
+    setPasswordStatus("saving");
+    setPasswordError(null);
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    if (updateError) {
+      setPasswordStatus("error");
+      setPasswordError(updateError.message);
+      return;
+    }
+    setPasswordStatus("saved");
+    setNewPassword("");
+  }
+
   if (authState === "checking" || authState === "unauthenticated") {
     return (
       <section className="mx-auto max-w-3xl px-6 py-24 text-center lg:px-10">
@@ -204,13 +227,57 @@ export default function AdminDashboardPage() {
     <section className="mx-auto max-w-6xl px-6 py-10 lg:px-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-heading text-2xl font-bold text-forest">AgriXpert Staff Dashboard</h1>
-        <button
-          onClick={handleSignOut}
-          className="rounded-full border border-forest/20 px-4 py-2 text-sm font-semibold text-forest-dark hover:bg-forest/5"
-        >
-          Sign Out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowPasswordForm((v) => !v)}
+            className="rounded-full border border-forest/20 px-4 py-2 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+          >
+            {showPasswordForm ? "Close" : "Set Password"}
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="rounded-full border border-forest/20 px-4 py-2 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+          >
+            Sign Out
+          </button>
+        </div>
       </div>
+
+      {showPasswordForm && (
+        <div className="mt-4 max-w-md rounded-2xl border border-forest/10 bg-white p-5 shadow-sm">
+          <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-harvest-gold">
+            Set a password for this account
+          </h2>
+          <p className="mt-2 text-xs text-forest-dark/60">
+            Once set, you can sign in with your email and this password instead of waiting for an
+            email link each time.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New password (min. 8 characters)"
+              className="flex-1 rounded-lg border border-forest/20 px-3 py-2 text-sm"
+            />
+            <button
+              onClick={handleSetPassword}
+              disabled={passwordStatus === "saving"}
+              className="rounded-full bg-forest px-5 py-2 text-sm font-semibold text-natural-white hover:bg-forest-dark disabled:opacity-40"
+            >
+              {passwordStatus === "saving" ? "Saving…" : "Save"}
+            </button>
+          </div>
+          {passwordStatus === "saved" && (
+            <p className="mt-2 text-xs font-semibold text-agri-green">
+              Password set. You can now sign in with it from the login page.
+            </p>
+          )}
+          {passwordStatus === "error" && passwordError && (
+            <p className="mt-2 text-xs font-semibold text-red-600">{passwordError}</p>
+          )}
+        </div>
+      )}
 
       <div className="mt-6 flex flex-wrap gap-2 border-b border-forest/10">
         {tabs.map((tab) => (
