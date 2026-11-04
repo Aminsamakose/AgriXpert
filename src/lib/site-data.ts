@@ -280,7 +280,7 @@ export const footerColumns = [
   {
     heading: "Contact",
     links: [
-      { label: "agrixpert@samakose.com", href: "mailto:agrixpert@samakose.com" },
+      { label: "agrixpert26@gmail.com", href: "mailto:agrixpert26@gmail.com" },
       { label: "+233 (0) 55-858-9254", href: "tel:+233558589254" },
       { label: "Tamale, Northern Ghana", href: "/contact" },
     ],
@@ -296,4 +296,4 @@ export const enquiryTypes = [
   "Other",
 ];
 
-export const contactEmail = "agrixpert@samakose.com";
+export const contactEmail = "agrixpert26@gmail.com";
