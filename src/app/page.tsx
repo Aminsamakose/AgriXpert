@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import BenefitsList from "@/components/BenefitsList";
 import {
   problems,
   differentiators,
@@ -58,7 +59,7 @@ export default async function Home() {
   return (
     <>
       {/* Section 1: Hero */}
-      <section className="relative isolate overflow-hidden bg-forest text-natural-white">
+      <section className="relative isolate overflow-hidden bg-forest pb-20 text-natural-white sm:pb-28">
         <Image
           src={heroImage}
           alt={stockImages.heroField.alt}
@@ -67,14 +68,17 @@ export default async function Home() {
           sizes="100vw"
           className="absolute inset-0 -z-20 object-cover"
         />
-        {/* Forest-tinted scrim so hero copy stays legible over the photo */}
+        {/* Duotone wash (forest + terracotta) instead of a flat directional
+            scrim — reads as a considered photo treatment rather than a
+            generic dark-overlay-for-contrast SaaS hero. */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-r from-forest-dark/95 via-forest-dark/80 to-forest-dark/40"
+          className="absolute inset-0 -z-10 bg-gradient-to-br from-forest-dark/90 via-forest/75 to-harvest-gold/35 mix-blend-multiply"
         />
-        <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+        <div aria-hidden className="absolute inset-0 -z-10 bg-forest-dark/50" />
+        <div className="mx-auto max-w-7xl px-6 pt-24 lg:px-10 lg:pt-32">
           <div className="max-w-3xl">
-            <h1 className="font-heading text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="font-heading text-4xl leading-tight sm:text-5xl lg:text-6xl">
               {heroTitle}
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-natural-white/85">{heroDescription}</p>
@@ -100,6 +104,14 @@ export default async function Home() {
             </div>
           </div>
         </div>
+        <svg
+          aria-hidden
+          viewBox="0 0 1440 80"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 -z-0 h-14 w-full text-natural-white sm:h-20"
+        >
+          <path d="M0,80 C480,0 960,0 1440,80 L1440,80 L0,80 Z" fill="currentColor" />
+        </svg>
       </section>
 
       {/* Section 2: The problem */}
@@ -219,14 +231,9 @@ export default async function Home() {
         <div className="mx-auto max-w-7xl px-6 lg:px-10 grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>
             <SectionHeading eyebrow="For Farmers" title="Grow with AgriXpert. Access More Opportunities." />
-            <ul className="mt-8 space-y-3">
-              {farmerValueProps.map((item) => (
-                <li key={item} className="flex gap-3 text-sm text-forest-dark/80">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-agri-green" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-8">
+              <BenefitsList items={farmerValueProps} tone="agri-green" />
+            </div>
             <Link
               href="/for-farmers"
               className="mt-8 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-natural-white hover:bg-forest-dark"
@@ -260,14 +267,9 @@ export default async function Home() {
           </div>
           <div className="order-1 lg:order-2">
             <SectionHeading eyebrow="For Buyers" title="Source Quality Agricultural Commodities with Confidence." />
-            <ul className="mt-8 space-y-3">
-              {buyerValueProps.map((item) => (
-                <li key={item} className="flex gap-3 text-sm text-forest-dark/80">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-harvest-gold" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-8">
+              <BenefitsList items={buyerValueProps} tone="harvest-gold" />
+            </div>
             <Link
               href="/for-buyers"
               className="mt-8 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-natural-white hover:bg-forest-dark"

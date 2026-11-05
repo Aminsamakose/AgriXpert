@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { CircleCheck } from "lucide-react";
 import PageHero from "@/components/PageHero";
 import BuyerRegistrationForm from "@/components/BuyerRegistrationForm";
 import { buyerValueProps, stockImages } from "@/lib/site-data";
@@ -29,9 +30,9 @@ export default async function ForBuyersPage() {
         <h2 className="font-heading text-2xl font-bold text-forest">What You Can Do</h2>
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
           {buyerValueProps.map((item) => (
-            <li key={item} className="flex gap-3 rounded-xl bg-harvest-gold/10 p-4 text-sm text-forest-dark/80">
-              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-harvest-gold" />
-              {item}
+            <li key={item} className="flex items-start gap-3 rounded-xl bg-harvest-gold/10 p-4 text-sm text-forest-dark/80">
+              <CircleCheck aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-harvest-gold" strokeWidth={1.5} />
+              <span>{item}</span>
             </li>
           ))}
         </ul>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CircleCheck } from "lucide-react";
 import PageHero from "@/components/PageHero";
 import { stockImages } from "@/lib/site-data";
 import { getSiteContent, pick } from "@/lib/content";
@@ -422,9 +423,9 @@ export default async function AboutPage() {
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {expertiseAreas.map((area) => (
-              <div key={area} className="flex gap-3 rounded-xl bg-forest/5 p-4 text-sm text-forest-dark/80">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-agri-green" />
-                {area}
+              <div key={area} className="flex items-start gap-3 rounded-xl bg-forest/5 p-4 text-sm text-forest-dark/80">
+                <CircleCheck aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-agri-green" strokeWidth={1.5} />
+                <span>{area}</span>
               </div>
             ))}
           </div>
