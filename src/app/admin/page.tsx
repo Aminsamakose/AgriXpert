@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import ContentManager from "@/components/admin/ContentManager";
 import PageContentManager from "@/components/admin/PageContentManager";
 import InsightsManager from "@/components/admin/InsightsManager";
+import StaffManager from "@/components/admin/StaffManager";
 import { valueChains, stockImages } from "@/lib/site-data";
 import { solutionsList } from "@/lib/solutions-content";
 
@@ -19,7 +20,8 @@ type Tab =
   | "content"
   | "value-chains"
   | "solutions"
-  | "insights";
+  | "insights"
+  | "staff";
 
 const stockImageOptions = Object.entries(stockImages).map(([key, img]) => ({ key, src: img.src }));
 
@@ -105,17 +107,23 @@ function verificationBadge(status: string) {
 const leadStatuses = ["pending", "verified", "active", "inactive"];
 const enquiryStatuses = ["new", "in_progress", "resolved", "archived"];
 
-const tabs: { key: Tab; label: string }[] = [
+// Tabs marked adminOnly are hidden from "staff" accounts — site/platform
+// configuration (content, insights) and managing this staff list itself
+// are reserved for full "admin" accounts. Everything else (verifying
+// registrations, moderating the marketplace, reporting) is available to
+// both roles, matching the is_admin()/is_staff() RLS split in the database.
+const tabs: { key: Tab; label: string; adminOnly?: boolean }[] = [
   { key: "enquiries", label: "Enquiries" },
   { key: "farmers", label: "Farmers" },
   { key: "buyers", label: "Buyers" },
   { key: "suppliers", label: "Suppliers" },
   { key: "cooperatives", label: "Cooperatives" },
   { key: "reporting", label: "Reporting" },
-  { key: "content", label: "Site Content" },
-  { key: "value-chains", label: "Value Chains" },
-  { key: "solutions", label: "Solutions" },
-  { key: "insights", label: "Insights" },
+  { key: "content", label: "Site Content", adminOnly: true },
+  { key: "value-chains", label: "Value Chains", adminOnly: true },
+  { key: "solutions", label: "Solutions", adminOnly: true },
+  { key: "insights", label: "Insights", adminOnly: true },
+  { key: "staff", label: "Staff Accounts", adminOnly: true },
 ];
 
 function formatDate(iso: string) {
@@ -133,6 +141,7 @@ export default function AdminDashboardPage() {
   const [authState, setAuthState] = useState<"checking" | "unauthenticated" | "unauthorized" | "authorized">(
     "checking"
   );
+  const [role, setRole] = useState<"admin" | "staff" | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("enquiries");
   const [loading, setLoading] = useState(false);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -158,6 +167,12 @@ export default function AdminDashboardPage() {
       setAuthState("unauthorized");
       return;
     }
+    const { data: ownRow } = await supabase
+      .from("admins")
+      .select("role")
+      .eq("email", sessionData.session.user.email ?? "")
+      .maybeSingle();
+    setRole((ownRow?.role as "admin" | "staff" | undefined) ?? "staff");
     setAuthState("authorized");
   }, [router]);
 
@@ -587,7 +602,7 @@ export default function AdminDashboardPage() {
       )}
 
       <div className="mt-6 flex flex-wrap gap-2 border-b border-forest/10">
-        {tabs.map((tab) => (
+        {tabs.filter((tab) => !tab.adminOnly || role === "admin").map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -981,22 +996,23 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {activeTab === "content" && <ContentManager />}
-      {activeTab === "value-chains" && (
+      {role === "admin" && activeTab === "content" && <ContentManager />}
+      {role === "admin" && activeTab === "value-chains" && (
         <PageContentManager
           entityType="value_chain"
           items={valueChains.map((vc) => ({ slug: vc.slug, label: vc.name }))}
           stockImageOptions={stockImageOptions}
         />
       )}
-      {activeTab === "solutions" && (
+      {role === "admin" && activeTab === "solutions" && (
         <PageContentManager
           entityType="solution"
           items={solutionsList.map((s) => ({ slug: s.slug, label: s.name }))}
           stockImageOptions={stockImageOptions}
         />
       )}
-      {activeTab === "insights" && <InsightsManager />}
+      {role === "admin" && activeTab === "insights" && <InsightsManager />}
+      {role === "admin" && activeTab === "staff" && <StaffManager />}
     </section>
   );
 }
