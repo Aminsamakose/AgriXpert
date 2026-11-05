@@ -123,6 +123,10 @@ export default function AdminDashboardPage() {
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [verificationFilter, setVerificationFilter] = useState<"all" | "pending" | "verified" | "rejected">("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkWorking, setBulkWorking] = useState(false);
 
   const checkAuth = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -235,6 +239,128 @@ export default function AdminDashboardPage() {
       return;
     }
     loadTab(entityType === "farmer" ? "farmers" : entityType === "buyer" ? "buyers" : "suppliers");
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset filter/selection UI state on tab change
+    setSearchQuery("");
+    setVerificationFilter("all");
+    setSelectedIds(new Set());
+  }, [activeTab]);
+
+  async function bulkDecide(entityType: VerifiableEntity, decision: "verified" | "rejected") {
+    if (selectedIds.size === 0) return;
+    setBulkWorking(true);
+    setError(null);
+    const { data, error: rpcError } = await supabase.rpc("bulk_verify_entity", {
+      p_entity_type: entityType,
+      p_entity_ids: Array.from(selectedIds),
+      p_decision: decision,
+    });
+    setBulkWorking(false);
+    if (rpcError) {
+      setError(rpcError.message);
+      return;
+    }
+    const failures = (data as { entity_id: string; ok: boolean; error: string | null }[] | null)?.filter((r) => !r.ok) ?? [];
+    if (failures.length > 0) {
+      setError(`${failures.length} of ${selectedIds.size} record(s) failed: ${failures[0].error}`);
+    }
+    setSelectedIds(new Set());
+    loadTab(entityType === "farmer" ? "farmers" : entityType === "buyer" ? "buyers" : "suppliers");
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function matchesFilters<T extends { verification_status: string }>(
+    row: T,
+    searchFields: (string | null | undefined)[]
+  ) {
+    if (verificationFilter !== "all" && row.verification_status !== verificationFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      return searchFields.some((f) => f && f.toLowerCase().includes(q));
+    }
+    return true;
+  }
+
+  function SearchFilterBar({
+    entityType,
+    selectableIds,
+  }: {
+    entityType: VerifiableEntity;
+    selectableIds: string[];
+  }) {
+    const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
+    return (
+      <div className="mb-4 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search name, company, email, location…"
+            className="flex-1 min-w-[200px] rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          />
+          <select
+            value={verificationFilter}
+            onChange={(e) => setVerificationFilter(e.target.value as typeof verificationFilter)}
+            className="rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          >
+            <option value="all">All verification states</option>
+            <option value="pending">Pending</option>
+            <option value="verified">Verified</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          {selectableIds.length > 0 && (
+            <label className="flex items-center gap-2 text-xs font-semibold text-forest-dark/70">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={(e) =>
+                  setSelectedIds(e.target.checked ? new Set(selectableIds) : new Set())
+                }
+              />
+              Select all shown ({selectableIds.length})
+            </label>
+          )}
+        </div>
+        {selectedIds.size > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-forest/5 p-3">
+            <span className="text-xs font-semibold text-forest-dark/70">
+              {selectedIds.size} selected
+            </span>
+            <button
+              onClick={() => bulkDecide(entityType, "verified")}
+              disabled={bulkWorking}
+              className="rounded-full bg-agri-green px-4 py-1.5 text-xs font-semibold text-natural-white hover:bg-agri-green/90 disabled:opacity-40"
+            >
+              {bulkWorking ? "Working…" : "Verify Selected"}
+            </button>
+            <button
+              onClick={() => bulkDecide(entityType, "rejected")}
+              disabled={bulkWorking}
+              className="rounded-full border border-red-300 px-4 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-40"
+            >
+              {bulkWorking ? "Working…" : "Reject Selected"}
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="rounded-full border border-forest/20 px-4 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   function VerificationControls({ entityType, row }: { entityType: VerifiableEntity; row: { id: string; verification_status: string; verified_at: string | null } }) {
@@ -459,13 +585,25 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {!loading && activeTab === "farmers" && (
+      {!loading && activeTab === "farmers" && (() => {
+        const filtered = farmers.filter((row) =>
+          matchesFilters(row, [row.full_name, row.email, row.location, row.cooperative_or_group])
+        );
+        return (
         <div className="mt-6 space-y-4">
-          {farmers.length === 0 && <p className="text-sm text-forest-dark/60">No farmer registrations yet.</p>}
-          {farmers.map((row) => (
+          <SearchFilterBar entityType="farmer" selectableIds={filtered.map((r) => r.id)} />
+          {filtered.length === 0 && <p className="text-sm text-forest-dark/60">No farmer registrations match.</p>}
+          {filtered.map((row) => (
             <div key={row.id} className="rounded-2xl border border-forest/10 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(row.id)}
+                    onChange={() => toggleSelected(row.id)}
+                    className="mt-1"
+                  />
+                  <div>
                   <p className="font-semibold text-forest-dark">{row.full_name}</p>
                   <p className="text-xs text-forest-dark/60">
                     {row.phone}
@@ -473,6 +611,7 @@ export default function AdminDashboardPage() {
                     {row.location ? ` · ${row.location}` : ""}
                   </p>
                   <p className="text-xs text-forest-dark/50">{formatDate(row.created_at)}</p>
+                  </div>
                 </div>
                 <select
                   value={row.status}
@@ -511,21 +650,33 @@ export default function AdminDashboardPage() {
             </div>
           ))}
         </div>
-      )}
+        );
+      })()}
 
-      {!loading && activeTab === "buyers" && (
+      {!loading && activeTab === "buyers" && (() => {
+        const filtered = buyers.filter((row) => matchesFilters(row, [row.company_name, row.contact_name, row.email]));
+        return (
         <div className="mt-6 space-y-4">
-          {buyers.length === 0 && <p className="text-sm text-forest-dark/60">No buyer requests yet.</p>}
-          {buyers.map((row) => (
+          <SearchFilterBar entityType="buyer" selectableIds={filtered.map((r) => r.id)} />
+          {filtered.length === 0 && <p className="text-sm text-forest-dark/60">No buyer requests match.</p>}
+          {filtered.map((row) => (
             <div key={row.id} className="rounded-2xl border border-forest/10 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(row.id)}
+                    onChange={() => toggleSelected(row.id)}
+                    className="mt-1"
+                  />
+                  <div>
                   <p className="font-semibold text-forest-dark">{row.company_name}</p>
                   <p className="text-xs text-forest-dark/60">
                     {row.contact_name} · {row.email}
                     {row.phone ? ` · ${row.phone}` : ""}
                   </p>
                   <p className="text-xs text-forest-dark/50">{formatDate(row.created_at)}</p>
+                  </div>
                 </div>
                 <select
                   value={row.status}
@@ -556,21 +707,33 @@ export default function AdminDashboardPage() {
             </div>
           ))}
         </div>
-      )}
+        );
+      })()}
 
-      {!loading && activeTab === "suppliers" && (
+      {!loading && activeTab === "suppliers" && (() => {
+        const filtered = suppliers.filter((row) => matchesFilters(row, [row.company_name, row.contact_name, row.email]));
+        return (
         <div className="mt-6 space-y-4">
-          {suppliers.length === 0 && <p className="text-sm text-forest-dark/60">No supplier registrations yet.</p>}
-          {suppliers.map((row) => (
+          <SearchFilterBar entityType="supplier" selectableIds={filtered.map((r) => r.id)} />
+          {filtered.length === 0 && <p className="text-sm text-forest-dark/60">No supplier registrations match.</p>}
+          {filtered.map((row) => (
             <div key={row.id} className="rounded-2xl border border-forest/10 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(row.id)}
+                    onChange={() => toggleSelected(row.id)}
+                    className="mt-1"
+                  />
+                  <div>
                   <p className="font-semibold text-forest-dark">{row.company_name}</p>
                   <p className="text-xs text-forest-dark/60">
                     {row.contact_name} · {row.email}
                     {row.phone ? ` · ${row.phone}` : ""}
                   </p>
                   <p className="text-xs text-forest-dark/50">{formatDate(row.created_at)}</p>
+                  </div>
                 </div>
                 <select
                   value={row.status}
@@ -595,7 +758,8 @@ export default function AdminDashboardPage() {
             </div>
           ))}
         </div>
-      )}
+        );
+      })()}
 
       {!loading && activeTab === "reporting" && (
         <div className="mt-6 space-y-8">
