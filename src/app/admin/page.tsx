@@ -7,6 +7,8 @@ import ContentManager from "@/components/admin/ContentManager";
 import PageContentManager from "@/components/admin/PageContentManager";
 import InsightsManager from "@/components/admin/InsightsManager";
 import StaffManager from "@/components/admin/StaffManager";
+import CrmPanel from "@/components/admin/CrmPanel";
+import FollowUpsManager from "@/components/admin/FollowUpsManager";
 import { valueChains, stockImages } from "@/lib/site-data";
 import { solutionsList } from "@/lib/solutions-content";
 
@@ -16,6 +18,7 @@ type Tab =
   | "buyers"
   | "suppliers"
   | "cooperatives"
+  | "followups"
   | "reporting"
   | "content"
   | "value-chains"
@@ -118,6 +121,7 @@ const tabs: { key: Tab; label: string; adminOnly?: boolean }[] = [
   { key: "buyers", label: "Buyers" },
   { key: "suppliers", label: "Suppliers" },
   { key: "cooperatives", label: "Cooperatives" },
+  { key: "followups", label: "Follow-ups" },
   { key: "reporting", label: "Reporting" },
   { key: "content", label: "Site Content", adminOnly: true },
   { key: "value-chains", label: "Value Chains", adminOnly: true },
@@ -189,7 +193,8 @@ export default function AdminDashboardPage() {
   >([]);
 
   const loadTab = useCallback(async (tab: Tab) => {
-    if (tab === "content" || tab === "value-chains" || tab === "solutions" || tab === "insights") return;
+    if (tab === "content" || tab === "value-chains" || tab === "solutions" || tab === "insights" || tab === "followups" || tab === "staff")
+      return;
     if (tab === "reporting") {
       setLoading(true);
       setError(null);
@@ -646,6 +651,7 @@ export default function AdminDashboardPage() {
                 </select>
               </div>
               <p className="mt-3 text-sm text-forest-dark/80">{row.message}</p>
+              <CrmPanel entityType="enquiry" entityId={row.id} entityLabel={row.name} />
             </div>
           ))}
         </div>
@@ -713,6 +719,7 @@ export default function AdminDashboardPage() {
                 )}
               </div>
               <VerificationControls entityType="farmer" row={row} />
+              <CrmPanel entityType="farmer" entityId={row.id} entityLabel={row.full_name} />
             </div>
           ))}
         </div>
@@ -770,6 +777,7 @@ export default function AdminDashboardPage() {
                 </p>
               )}
               <VerificationControls entityType="buyer" row={row} />
+              <CrmPanel entityType="buyer" entityId={row.id} entityLabel={row.company_name} />
             </div>
           ))}
         </div>
@@ -821,6 +829,7 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               <VerificationControls entityType="supplier" row={row} />
+              <CrmPanel entityType="supplier" entityId={row.id} entityLabel={row.company_name} />
             </div>
           ))}
         </div>
@@ -879,6 +888,7 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               <VerificationControls entityType="cooperative" row={row} />
+              <CrmPanel entityType="cooperative" entityId={row.id} entityLabel={row.name} />
             </div>
           ))}
         </div>
@@ -995,6 +1005,8 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {activeTab === "followups" && <FollowUpsManager />}
 
       {role === "admin" && activeTab === "content" && <ContentManager />}
       {role === "admin" && activeTab === "value-chains" && (
