@@ -42,6 +42,8 @@ type Farmer = {
   commodities: string[];
   cooperative_or_group: string | null;
   status: string;
+  verification_status: "pending" | "verified" | "rejected";
+  verified_at: string | null;
 };
 
 type Buyer = {
@@ -55,6 +57,8 @@ type Buyer = {
   quantity_required: string | null;
   quality_requirements: string | null;
   status: string;
+  verification_status: "pending" | "verified" | "rejected";
+  verified_at: string | null;
 };
 
 type Supplier = {
@@ -66,7 +70,20 @@ type Supplier = {
   phone: string | null;
   services: string[];
   status: string;
+  verification_status: "pending" | "verified" | "rejected";
+  verified_at: string | null;
 };
+
+type VerifiableEntity = "farmer" | "buyer" | "supplier";
+
+function verificationBadge(status: string) {
+  const colors: Record<string, string> = {
+    pending: "bg-harvest-gold/15 text-harvest-gold",
+    verified: "bg-agri-green/15 text-agri-green",
+    rejected: "bg-red-100 text-red-700",
+  };
+  return colors[status] ?? "bg-forest-dark/10 text-forest-dark/60";
+}
 
 const leadStatuses = ["pending", "verified", "active", "inactive"];
 const enquiryStatuses = ["new", "in_progress", "resolved", "archived"];
@@ -177,6 +194,53 @@ export default function AdminDashboardPage() {
       return;
     }
     loadTab(table);
+  }
+
+  const [verifying, setVerifying] = useState<string | null>(null);
+
+  async function decide(entityType: VerifiableEntity, id: string, decision: "verified" | "rejected") {
+    setVerifying(id);
+    setError(null);
+    const { error: rpcError } = await supabase.rpc("verify_entity", {
+      p_entity_type: entityType,
+      p_entity_id: id,
+      p_decision: decision,
+    });
+    setVerifying(null);
+    if (rpcError) {
+      setError(rpcError.message);
+      return;
+    }
+    loadTab(entityType === "farmer" ? "farmers" : entityType === "buyer" ? "buyers" : "suppliers");
+  }
+
+  function VerificationControls({ entityType, row }: { entityType: VerifiableEntity; row: { id: string; verification_status: string; verified_at: string | null } }) {
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-forest/5 pt-3">
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${verificationBadge(row.verification_status)}`}>
+          Verification: {row.verification_status}
+        </span>
+        {row.verified_at && (
+          <span className="text-xs text-forest-dark/40">as of {formatDate(row.verified_at)}</span>
+        )}
+        <div className="ml-auto flex gap-2">
+          <button
+            onClick={() => decide(entityType, row.id, "verified")}
+            disabled={verifying === row.id || row.verification_status === "verified"}
+            className="rounded-full bg-agri-green px-3 py-1.5 text-xs font-semibold text-natural-white hover:bg-agri-green/90 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {verifying === row.id ? "…" : "Verify"}
+          </button>
+          <button
+            onClick={() => decide(entityType, row.id, "rejected")}
+            disabled={verifying === row.id || row.verification_status === "rejected"}
+            className="rounded-full border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {verifying === row.id ? "…" : "Reject"}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   async function handleSignOut() {
@@ -387,6 +451,7 @@ export default function AdminDashboardPage() {
                   </span>
                 )}
               </div>
+              <VerificationControls entityType="farmer" row={row} />
             </div>
           ))}
         </div>
@@ -431,6 +496,7 @@ export default function AdminDashboardPage() {
                   {row.quality_requirements && <span>Quality: {row.quality_requirements}</span>}
                 </p>
               )}
+              <VerificationControls entityType="buyer" row={row} />
             </div>
           ))}
         </div>
@@ -469,6 +535,7 @@ export default function AdminDashboardPage() {
                   </span>
                 ))}
               </div>
+              <VerificationControls entityType="supplier" row={row} />
             </div>
           ))}
         </div>
