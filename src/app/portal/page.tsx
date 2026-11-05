@@ -6,6 +6,8 @@ import EmailMagicLinkForm from "@/components/EmailMagicLinkForm";
 import { supabase } from "@/lib/supabase";
 import { stockImages, valueChains } from "@/lib/site-data";
 
+type VerificationStatus = "pending" | "verified" | "rejected";
+
 type FarmerRecord = {
   id: string;
   created_at: string;
@@ -16,6 +18,7 @@ type FarmerRecord = {
   commodities: string[];
   cooperative_or_group: string | null;
   status: string;
+  verification_status: VerificationStatus;
 };
 
 type BuyerRecord = {
@@ -28,6 +31,7 @@ type BuyerRecord = {
   quantity_required: string | null;
   quality_requirements: string | null;
   status: string;
+  verification_status: VerificationStatus;
 };
 
 type SupplierRecord = {
@@ -38,7 +42,32 @@ type SupplierRecord = {
   phone: string | null;
   services: string[];
   status: string;
+  verification_status: VerificationStatus;
 };
+
+function VerificationBanner({ status }: { status: VerificationStatus }) {
+  if (status === "verified") {
+    return (
+      <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-agri-green/10 px-3 py-1 text-xs font-semibold text-agri-green">
+        ✓ Verified
+      </p>
+    );
+  }
+  if (status === "rejected") {
+    return (
+      <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+        This registration was not approved. Contact AgriXpert if you believe this was in error or to
+        update your details and be reconsidered.
+      </p>
+    );
+  }
+  return (
+    <p className="mt-3 rounded-xl bg-harvest-gold/10 px-3 py-2 text-xs font-medium text-harvest-gold">
+      Pending verification — an AgriXpert admin is reviewing this registration. Some marketplace
+      features will be unavailable until it's approved.
+    </p>
+  );
+}
 
 const supplierServiceCategories = [
   "Mechanisation & Farm Equipment",
@@ -132,11 +161,17 @@ export default function PortalPage() {
     const [farmers, buyers, suppliers] = await Promise.all([
       supabase
         .from("farmers")
-        .select("id, created_at, full_name, phone, location, farm_size_hectares, commodities, cooperative_or_group, status"),
+        .select(
+          "id, created_at, full_name, phone, location, farm_size_hectares, commodities, cooperative_or_group, status, verification_status"
+        ),
       supabase
         .from("buyers")
-        .select("id, created_at, company_name, contact_name, phone, commodities_needed, quantity_required, quality_requirements, status"),
-      supabase.from("suppliers").select("id, created_at, company_name, contact_name, phone, services, status"),
+        .select(
+          "id, created_at, company_name, contact_name, phone, commodities_needed, quantity_required, quality_requirements, status, verification_status"
+        ),
+      supabase
+        .from("suppliers")
+        .select("id, created_at, company_name, contact_name, phone, services, status, verification_status"),
     ]);
     setFarmerRecords((farmers.data as FarmerRecord[]) ?? []);
     setBuyerRecords((buyers.data as BuyerRecord[]) ?? []);
@@ -409,6 +444,7 @@ function FarmerCard({
             </span>
           ))}
         </div>
+        <VerificationBanner status={record.verification_status} />
         <button
           onClick={onEdit}
           className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
@@ -545,6 +581,7 @@ function BuyerCard({
             {record.quality_requirements && <span>Quality: {record.quality_requirements}</span>}
           </p>
         )}
+        <VerificationBanner status={record.verification_status} />
         <button
           onClick={onEdit}
           className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
@@ -668,6 +705,7 @@ function SupplierCard({
             </span>
           ))}
         </div>
+        <VerificationBanner status={record.verification_status} />
         <button
           onClick={onEdit}
           className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
