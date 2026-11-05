@@ -10,7 +10,8 @@ type ListingType = "supply" | "demand" | "service";
 type ListingStatus = "active" | "paused" | "closed";
 type VerificationStatus = "pending" | "verified" | "rejected";
 type ActorType = "farmer" | "buyer" | "supplier";
-type InterestStatus = "pending" | "accepted" | "declined" | "withdrawn";
+type InterestStatus = "pending" | "accepted" | "declined" | "withdrawn" | "completed";
+type BookingTable = "equipment_bookings" | "storage_bookings" | "listing_interests";
 
 type Listing = {
   id: string;
@@ -105,7 +106,7 @@ type Review = {
   id: string;
   subject_id: string;
   reviewer_id: string;
-  booking_table: "equipment_bookings" | "storage_bookings" | "listing_interests";
+  booking_table: BookingTable;
   booking_id: string;
   rating: number;
   comment: string | null;
@@ -143,6 +144,7 @@ function statusBadge(status: string) {
     accepted: "bg-agri-green/15 text-agri-green",
     declined: "bg-red-100 text-red-700",
     withdrawn: "bg-forest-dark/10 text-forest-dark/60",
+    completed: "bg-forest/10 text-forest",
   };
   return colors[status] ?? "bg-forest-dark/10 text-forest-dark/60";
 }
@@ -185,7 +187,7 @@ export default function MarketplacePage() {
   const [storageOwnerByFacilityId, setStorageOwnerByFacilityId] = useState<Record<string, string>>({});
   const [myReviews, setMyReviews] = useState<Review[]>([]);
   const [reviewingFor, setReviewingFor] = useState<{
-    bookingTable: "equipment_bookings" | "storage_bookings";
+    bookingTable: BookingTable;
     bookingId: string;
     subjectId: string;
   } | null>(null);
@@ -486,6 +488,11 @@ export default function MarketplacePage() {
     loadData();
   }
 
+  async function markInterestCompleted(id: string) {
+    await supabase.from("listing_interests").update({ status: "completed" }).eq("id", id);
+    loadData();
+  }
+
   async function handleRequestBooking(form: HTMLFormElement, kind: "equipment" | "storage", id: string) {
     if (!identity) return;
     setBooking(true);
@@ -531,7 +538,7 @@ export default function MarketplacePage() {
 
   async function handleSubmitReview(
     form: HTMLFormElement,
-    bookingTable: "equipment_bookings" | "storage_bookings",
+    bookingTable: BookingTable,
     bookingId: string,
     subjectId: string
   ) {
@@ -556,7 +563,7 @@ export default function MarketplacePage() {
     loadData();
   }
 
-  function hasReviewed(bookingTable: "equipment_bookings" | "storage_bookings", bookingId: string) {
+  function hasReviewed(bookingTable: BookingTable, bookingId: string) {
     return myReviews.some(
       (r) => r.reviewer_id === identity?.userId && r.booking_table === bookingTable && r.booking_id === bookingId
     );
@@ -746,6 +753,34 @@ export default function MarketplacePage() {
                           </button>
                         </div>
                       )}
+                      {i.status === "accepted" && (
+                        <button
+                          onClick={() => markInterestCompleted(i.id)}
+                          className="mt-3 rounded-full bg-forest px-3 py-1.5 text-xs font-semibold text-natural-white hover:bg-forest-dark"
+                        >
+                          Mark Completed
+                        </button>
+                      )}
+                      {i.status === "completed" && !hasReviewed("listing_interests", i.id) && identity && (
+                        reviewingFor?.bookingId === i.id ? (
+                          <ReviewForm
+                            reviewing={reviewing}
+                            reviewError={reviewError}
+                            onCancel={() => setReviewingFor(null)}
+                            onSubmit={(form) => handleSubmitReview(form, "listing_interests", i.id, i.responder_id)}
+                          />
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setReviewError(null);
+                              setReviewingFor({ bookingTable: "listing_interests", bookingId: i.id, subjectId: i.responder_id });
+                            }}
+                            className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+                          >
+                            Review Responder
+                          </button>
+                        )
+                      )}
                     </div>
                   ))}
                 </div>
@@ -757,24 +792,47 @@ export default function MarketplacePage() {
               <div className="mt-10">
                 <h2 className="font-heading text-lg font-bold text-forest">Interest I&apos;ve Sent</h2>
                 <div className="mt-3 space-y-3">
-                  {sentByMe.map((i) => (
-                    <div key={i.id} className="rounded-2xl border border-forest/10 bg-white p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <p className="text-sm text-forest-dark/70">{i.message || "No message provided."}</p>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(i.status)}`}>
-                          {i.status}
-                        </span>
+                  {sentByMe.map((i) => {
+                    const listingOwnerId = listings.find((l) => l.id === i.listing_id)?.actor_id;
+                    return (
+                      <div key={i.id} className="rounded-2xl border border-forest/10 bg-white p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <p className="text-sm text-forest-dark/70">{i.message || "No message provided."}</p>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(i.status)}`}>
+                            {i.status}
+                          </span>
+                        </div>
+                        {i.status === "pending" && (
+                          <button
+                            onClick={() => withdrawInterest(i.id)}
+                            className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+                          >
+                            Withdraw
+                          </button>
+                        )}
+                        {i.status === "completed" && listingOwnerId && !hasReviewed("listing_interests", i.id) && identity && (
+                          reviewingFor?.bookingId === i.id ? (
+                            <ReviewForm
+                              reviewing={reviewing}
+                              reviewError={reviewError}
+                              onCancel={() => setReviewingFor(null)}
+                              onSubmit={(form) => handleSubmitReview(form, "listing_interests", i.id, listingOwnerId)}
+                            />
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setReviewError(null);
+                                setReviewingFor({ bookingTable: "listing_interests", bookingId: i.id, subjectId: listingOwnerId });
+                              }}
+                              className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+                            >
+                              Review Listing Owner
+                            </button>
+                          )
+                        )}
                       </div>
-                      {i.status === "pending" && (
-                        <button
-                          onClick={() => withdrawInterest(i.id)}
-                          className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
-                        >
-                          Withdraw
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
