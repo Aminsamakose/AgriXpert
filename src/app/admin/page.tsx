@@ -14,6 +14,7 @@ type Tab =
   | "farmers"
   | "buyers"
   | "suppliers"
+  | "reporting"
   | "content"
   | "value-chains"
   | "solutions"
@@ -93,6 +94,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: "farmers", label: "Farmers" },
   { key: "buyers", label: "Buyers" },
   { key: "suppliers", label: "Suppliers" },
+  { key: "reporting", label: "Reporting" },
   { key: "content", label: "Site Content" },
   { key: "value-chains", label: "Value Chains" },
   { key: "solutions", label: "Solutions" },
@@ -142,8 +144,29 @@ export default function AdminDashboardPage() {
     checkAuth();
   }, [checkAuth]);
 
+  const [summary, setSummary] = useState<
+    { entity_type: string; verification_status: string; status: string; actor_count: number }[]
+  >([]);
+  const [timeToVerify, setTimeToVerify] = useState<
+    { entity_type: string; region: string; avg_time_to_verification: string | null; verified_count: number }[]
+  >([]);
+
   const loadTab = useCallback(async (tab: Tab) => {
     if (tab === "content" || tab === "value-chains" || tab === "solutions" || tab === "insights") return;
+    if (tab === "reporting") {
+      setLoading(true);
+      setError(null);
+      const [summaryRes, timeRes] = await Promise.all([
+        supabase.from("v_verification_summary").select("*"),
+        supabase.from("v_time_to_verification").select("*"),
+      ]);
+      if (summaryRes.error) setError(summaryRes.error.message);
+      else setSummary(summaryRes.data ?? []);
+      if (timeRes.error) setError((prev) => prev ?? timeRes.error!.message);
+      else setTimeToVerify(timeRes.data ?? []);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -246,6 +269,39 @@ export default function AdminDashboardPage() {
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.replace("/admin/login");
+  }
+
+  async function exportCsv(table: "farmers" | "buyers" | "suppliers") {
+    setError(null);
+    const { data, error: qError } = await supabase.from(table).select("*");
+    if (qError) {
+      setError(qError.message);
+      return;
+    }
+    const rows = data ?? [];
+    if (rows.length === 0) {
+      setError(`No ${table} records to export yet.`);
+      return;
+    }
+    const headers = Object.keys(rows[0]);
+    const csvEscape = (v: unknown) => {
+      if (v == null) return "";
+      const s = Array.isArray(v) ? v.join("; ") : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => csvEscape((r as Record<string, unknown>)[h])).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `agrixpert-${table}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function formatInterval(value: string | null) {
+    if (!value) return "—";
+    return value;
   }
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -538,6 +594,111 @@ export default function AdminDashboardPage() {
               <VerificationControls entityType="supplier" row={row} />
             </div>
           ))}
+        </div>
+      )}
+
+      {!loading && activeTab === "reporting" && (
+        <div className="mt-6 space-y-8">
+          <div>
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-harvest-gold">
+              Export Records
+            </h2>
+            <p className="mt-1 text-xs text-forest-dark/60">
+              Download the full, current table as CSV for reporting, grant applications, or offline
+              review.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => exportCsv("farmers")}
+                className="rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+              >
+                Export Farmers CSV
+              </button>
+              <button
+                onClick={() => exportCsv("buyers")}
+                className="rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+              >
+                Export Buyers CSV
+              </button>
+              <button
+                onClick={() => exportCsv("suppliers")}
+                className="rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+              >
+                Export Suppliers CSV
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-harvest-gold">
+              Verification Summary
+            </h2>
+            <p className="mt-1 text-xs text-forest-dark/60">
+              Counts by actor type, verification outcome, and general status.
+            </p>
+            {summary.length === 0 ? (
+              <p className="mt-3 text-sm text-forest-dark/60">No records yet.</p>
+            ) : (
+              <table className="mt-3 w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-forest/10 text-xs uppercase tracking-wide text-forest-dark/50">
+                    <th className="py-2 pr-4">Actor type</th>
+                    <th className="py-2 pr-4">Verification</th>
+                    <th className="py-2 pr-4">Status</th>
+                    <th className="py-2 pr-4">Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {summary.map((row, i) => (
+                    <tr key={i} className="border-b border-forest/5">
+                      <td className="py-2 pr-4 capitalize">{row.entity_type}</td>
+                      <td className="py-2 pr-4">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${verificationBadge(row.verification_status)}`}>
+                          {row.verification_status}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-4 capitalize">{row.status}</td>
+                      <td className="py-2 pr-4 font-semibold">{row.actor_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div>
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-harvest-gold">
+              Average Time to Verification
+            </h2>
+            <p className="mt-1 text-xs text-forest-dark/60">
+              By actor type and region, for records that have been verified. The kind of figure a
+              donor midterm review asks for.
+            </p>
+            {timeToVerify.length === 0 ? (
+              <p className="mt-3 text-sm text-forest-dark/60">No verified records yet.</p>
+            ) : (
+              <table className="mt-3 w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-forest/10 text-xs uppercase tracking-wide text-forest-dark/50">
+                    <th className="py-2 pr-4">Actor type</th>
+                    <th className="py-2 pr-4">Region</th>
+                    <th className="py-2 pr-4">Avg. time to verify</th>
+                    <th className="py-2 pr-4">Verified count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {timeToVerify.map((row, i) => (
+                    <tr key={i} className="border-b border-forest/5">
+                      <td className="py-2 pr-4 capitalize">{row.entity_type}</td>
+                      <td className="py-2 pr-4">{row.region}</td>
+                      <td className="py-2 pr-4">{formatInterval(row.avg_time_to_verification)}</td>
+                      <td className="py-2 pr-4 font-semibold">{row.verified_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       )}
 
