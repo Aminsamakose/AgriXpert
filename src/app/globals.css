@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F4F6F1;
+  --background: #F7F5EE;
   --foreground: #16281C;
 
   --color-forest: #075421;
   --color-forest-dark: #053A17;
   --color-agri-green: #69B42E;
-  --color-harvest-gold: #F58212;
+  /* Softened from a neon safety-orange (#F58212) to a muted, editorial
+     terracotta — reads as considered and earthy rather than a default
+     SaaS "accent" color. */
+  --color-harvest-gold: #C8622C;
   --color-natural-white: #FFFFFF;
 }
 
@@ -21,16 +24,33 @@
   --color-harvest-gold: var(--color-harvest-gold);
   --color-natural-white: var(--color-natural-white);
 
-  --font-heading: "Plus Jakarta Sans";
-  --font-sans: "Inter";
+  /* Fraunces (italic) for headings reads as an editorial/NGO brand voice
+     rather than a generic bold-geometric-sans SaaS template. Work Sans
+     (light/regular) is a warmer, humanist body face than Inter. */
+  --font-heading: "Fraunces";
+  --font-sans: "Work Sans";
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+
+/* Small uppercase eyebrow/kicker labels (section labels, badges) should
+   stay in the body sans, set wide and light — not inherit the serif
+   italic heading treatment. */
+.eyebrow {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.08em;
 }
