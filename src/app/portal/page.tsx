@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import PageHero from "@/components/PageHero";
 import EmailMagicLinkForm from "@/components/EmailMagicLinkForm";
 import { supabase } from "@/lib/supabase";
@@ -91,6 +91,128 @@ const supplierServiceCategories = [
   "Financial Services",
   "Other",
 ];
+
+type MemberRecord = {
+  id: string;
+  member_name: string | null;
+  role: "lead" | "member";
+  member_status: "active" | "removed";
+  joined_at: string;
+  farmer_id: string | null;
+  farmers: { full_name: string } | null;
+};
+
+function CooperativeMembersSection({ cooperativeId }: { cooperativeId: string }) {
+  const [members, setMembers] = useState<MemberRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data, error: loadError } = await supabase
+      .from("cooperative_members")
+      .select("id, member_name, role, member_status, joined_at, farmer_id, farmers(full_name)")
+      .eq("cooperative_id", cooperativeId)
+      .eq("member_status", "active")
+      .order("joined_at", { ascending: true });
+    if (!loadError) setMembers((data as unknown as MemberRecord[]) ?? []);
+    setLoading(false);
+  }, [cooperativeId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetch on mount
+    load();
+  }, [load]);
+
+  async function handleAdd(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const name = newName.trim();
+    if (!name) return;
+    setAdding(true);
+    setError(null);
+    const { error: insertError } = await supabase.from("cooperative_members").insert({
+      cooperative_id: cooperativeId,
+      member_name: name,
+      role: "member",
+    });
+    setAdding(false);
+    if (insertError) {
+      setError(insertError.message);
+      return;
+    }
+    setNewName("");
+    load();
+  }
+
+  async function handleRemove(id: string) {
+    setError(null);
+    const { error: removeError } = await supabase
+      .from("cooperative_members")
+      .update({ member_status: "removed" })
+      .eq("id", id);
+    if (removeError) {
+      setError(removeError.message);
+      return;
+    }
+    load();
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-forest/10 bg-forest/5 p-4">
+      <p className="text-sm font-semibold text-forest-dark">Members ({members.length})</p>
+      {loading && <p className="mt-2 text-xs text-forest-dark/60">Loading members…</p>}
+      {!loading && members.length === 0 && (
+        <p className="mt-2 text-xs text-forest-dark/60">
+          No members added yet. Add members below so they can be linked to clustered-demand opportunities
+          and group market access.
+        </p>
+      )}
+      {!loading && members.length > 0 && (
+        <ul className="mt-2 space-y-1.5">
+          {members.map((m) => (
+            <li key={m.id} className="flex items-center justify-between gap-2 text-sm text-forest-dark/80">
+              <span>
+                {m.farmers?.full_name ?? m.member_name}
+                {m.role === "lead" && (
+                  <span className="ml-2 rounded-full bg-harvest-gold/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-harvest-gold">
+                    Lead
+                  </span>
+                )}
+              </span>
+              {m.role !== "lead" && (
+                <button
+                  type="button"
+                  onClick={() => handleRemove(m.id)}
+                  className="text-xs font-semibold text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <form onSubmit={handleAdd} className="mt-3 flex gap-2">
+        <input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Member full name"
+          className="flex-1 rounded-lg border border-forest/20 px-3 py-1.5 text-sm"
+        />
+        <button
+          type="submit"
+          disabled={adding || !newName.trim()}
+          className="rounded-full bg-forest px-4 py-1.5 text-xs font-semibold text-natural-white hover:bg-forest-dark disabled:cursor-not-allowed disabled:bg-forest/40"
+        >
+          {adding ? "Adding…" : "Add"}
+        </button>
+      </form>
+      {error && <p className="mt-2 text-xs font-medium text-red-600">{error}</p>}
+    </div>
+  );
+}
 
 function statusBadge(status: string) {
   const colors: Record<string, string> = {
@@ -904,6 +1026,7 @@ function CooperativeCard({
           ))}
         </div>
         <VerificationBanner status={record.verification_status} />
+        <CooperativeMembersSection cooperativeId={record.id} />
         <button
           onClick={onEdit}
           className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
