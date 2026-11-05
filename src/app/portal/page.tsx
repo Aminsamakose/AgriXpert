@@ -45,6 +45,19 @@ type SupplierRecord = {
   verification_status: VerificationStatus;
 };
 
+type CooperativeRecord = {
+  id: string;
+  created_at: string;
+  name: string;
+  lead_contact_name: string;
+  phone: string | null;
+  location_label: string | null;
+  member_count_estimate: number | null;
+  primary_commodities: string[];
+  status: string;
+  verification_status: VerificationStatus;
+};
+
 function VerificationBanner({ status }: { status: VerificationStatus }) {
   if (status === "verified") {
     return (
@@ -128,8 +141,9 @@ export default function PortalPage() {
   const [farmerRecords, setFarmerRecords] = useState<FarmerRecord[]>([]);
   const [buyerRecords, setBuyerRecords] = useState<BuyerRecord[]>([]);
   const [supplierRecords, setSupplierRecords] = useState<SupplierRecord[]>([]);
+  const [cooperativeRecords, setCooperativeRecords] = useState<CooperativeRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [editingSection, setEditingSection] = useState<"farmer" | "buyer" | "supplier" | null>(null);
+  const [editingSection, setEditingSection] = useState<"farmer" | "buyer" | "supplier" | "cooperative" | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -166,7 +180,7 @@ export default function PortalPage() {
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
-    const [farmers, buyers, suppliers] = await Promise.all([
+    const [farmers, buyers, suppliers, cooperatives] = await Promise.all([
       supabase
         .from("farmers")
         .select(
@@ -180,10 +194,16 @@ export default function PortalPage() {
       supabase
         .from("suppliers")
         .select("id, created_at, company_name, contact_name, phone, services, status, verification_status"),
+      supabase
+        .from("cooperatives")
+        .select(
+          "id, created_at, name, lead_contact_name, phone, location_label, member_count_estimate, primary_commodities, status, verification_status"
+        ),
     ]);
     setFarmerRecords((farmers.data as FarmerRecord[]) ?? []);
     setBuyerRecords((buyers.data as BuyerRecord[]) ?? []);
     setSupplierRecords((suppliers.data as SupplierRecord[]) ?? []);
+    setCooperativeRecords((cooperatives.data as CooperativeRecord[]) ?? []);
     setLoading(false);
   }, []);
 
@@ -200,6 +220,7 @@ export default function PortalPage() {
     setFarmerRecords([]);
     setBuyerRecords([]);
     setSupplierRecords([]);
+    setCooperativeRecords([]);
   }
 
   async function saveFarmer(form: HTMLFormElement, commodities: string[]) {
@@ -262,7 +283,26 @@ export default function PortalPage() {
     loadRecords();
   }
 
-  const hasAnyRecord = farmerRecords.length + buyerRecords.length + supplierRecords.length > 0;
+  async function saveCooperative(form: HTMLFormElement, commodities: string[]) {
+    setSaving(true);
+    setSaveError(null);
+    const fd = new FormData(form);
+    const { error } = await supabase.rpc("update_own_cooperative", {
+      p_lead_contact_name: String(fd.get("leadContactName") ?? ""),
+      p_phone: String(fd.get("phone") ?? ""),
+      p_primary_commodities: commodities,
+    });
+    setSaving(false);
+    if (error) {
+      setSaveError(error.message);
+      return;
+    }
+    setEditingSection(null);
+    loadRecords();
+  }
+
+  const hasAnyRecord =
+    farmerRecords.length + buyerRecords.length + supplierRecords.length + cooperativeRecords.length > 0;
 
   return (
     <>
@@ -297,6 +337,10 @@ export default function PortalPage() {
           or{" "}
           <a href="/partnerships" className="font-semibold text-forest hover:text-forest-dark">
             Partnerships
+          </a>
+          , or register a group via{" "}
+          <a href="/for-cooperatives" className="font-semibold text-forest hover:text-forest-dark">
+            For Cooperatives
           </a>{" "}
           to submit your details first. Once registered, sign in below with the same email to track
           and update your status.
@@ -348,6 +392,10 @@ export default function PortalPage() {
                   or{" "}
                   <a href="/partnerships" className="font-semibold text-forest hover:text-forest-dark">
                     Partnerships
+                  </a>
+                  , or{" "}
+                  <a href="/for-cooperatives" className="font-semibold text-forest hover:text-forest-dark">
+                    For Cooperatives
                   </a>
                   .
                 </p>
@@ -401,6 +449,23 @@ export default function PortalPage() {
                     }}
                     onCancel={() => setEditingSection(null)}
                     onSave={saveSupplier}
+                  />
+                ))}
+
+              {!loading &&
+                cooperativeRecords.map((r) => (
+                  <CooperativeCard
+                    key={`${r.id}-${editingSection === "cooperative"}`}
+                    record={r}
+                    editing={editingSection === "cooperative"}
+                    saving={saving}
+                    saveError={editingSection === "cooperative" ? saveError : null}
+                    onEdit={() => {
+                      setSaveError(null);
+                      setEditingSection("cooperative");
+                    }}
+                    onCancel={() => setEditingSection(null)}
+                    onSave={saveCooperative}
                   />
                 ))}
                 </>
@@ -762,6 +827,122 @@ function SupplierCard({
           <CommodityToggle
             options={supplierServiceCategories}
             selected={services}
+            onToggle={toggle}
+            activeClass="bg-agri-green/20 text-agri-green"
+          />
+        </div>
+      </div>
+      {saveError && <p className="text-sm font-medium text-red-600">{saveError}</p>}
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-natural-white hover:bg-forest-dark disabled:cursor-not-allowed disabled:bg-forest/40"
+        >
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full border border-forest/20 px-5 py-2.5 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function CooperativeCard({
+  record,
+  editing,
+  saving,
+  saveError,
+  onEdit,
+  onCancel,
+  onSave,
+}: {
+  record: CooperativeRecord;
+  editing: boolean;
+  saving: boolean;
+  saveError: string | null;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: (form: HTMLFormElement, commodities: string[]) => void;
+}) {
+  const [commodities, setCommodities] = useState<string[]>(record.primary_commodities);
+
+  function toggle(name: string) {
+    setCommodities((prev) => (prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]));
+  }
+
+  if (!editing) {
+    return (
+      <div className="mt-6 rounded-2xl border border-forest/10 bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-heading text-lg font-bold text-forest">Cooperative Registration</h2>
+            <p className="mt-1 font-semibold text-forest-dark">{record.name}</p>
+            <p className="text-xs text-forest-dark/60">
+              {record.lead_contact_name}
+              {record.phone ? ` · ${record.phone}` : ""}
+            </p>
+            <p className="text-xs text-forest-dark/60">
+              {record.location_label ?? "Location not provided"}
+              {record.member_count_estimate ? ` · ~${record.member_count_estimate} members` : ""}
+            </p>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(record.status)}`}>
+            {record.status}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+          {record.primary_commodities.map((c) => (
+            <span key={c} className="rounded-full bg-agri-green/10 px-3 py-1 text-agri-green">
+              {c}
+            </span>
+          ))}
+        </div>
+        <VerificationBanner status={record.verification_status} />
+        <button
+          onClick={onEdit}
+          className="mt-4 rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Edit Details
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSave(e.currentTarget, commodities);
+      }}
+      className="mt-6 space-y-4 rounded-2xl border border-forest/10 bg-white p-5"
+    >
+      <h2 className="font-heading text-lg font-bold text-forest">Edit Cooperative Registration</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Lead Contact Person</label>
+          <input
+            name="leadContactName"
+            defaultValue={record.lead_contact_name}
+            className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-forest-dark">Phone</label>
+          <input name="phone" defaultValue={record.phone ?? ""} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <div>
+        <span className="text-sm font-medium text-forest-dark">Primary Commodities</span>
+        <div className="mt-2">
+          <CommodityToggle
+            options={valueChains.map((v) => v.name)}
+            selected={commodities}
             onToggle={toggle}
             activeClass="bg-agri-green/20 text-agri-green"
           />

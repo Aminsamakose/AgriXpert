@@ -9,7 +9,7 @@ import { stockImages, valueChains } from "@/lib/site-data";
 type ListingType = "supply" | "demand" | "service";
 type ListingStatus = "active" | "paused" | "closed";
 type VerificationStatus = "pending" | "verified" | "rejected";
-type ActorType = "farmer" | "buyer" | "supplier";
+type ActorType = "farmer" | "buyer" | "supplier" | "cooperative";
 type InterestStatus = "pending" | "accepted" | "declined" | "withdrawn" | "completed";
 type BookingTable = "equipment_bookings" | "storage_bookings" | "listing_interests";
 
@@ -50,6 +50,12 @@ type Interest = {
 
 type MyIdentity = {
   userId: string;
+  // The id to use as listings.actor_id. For farmer/buyer/supplier this is
+  // the same as the auth user id, but for a cooperative it is the
+  // cooperative's own id (cooperatives.id) — userId stays the signed-in
+  // lead's auth id for reviewer_id/responder_id/requester_id, which are
+  // FKs to auth.users regardless of actor type.
+  actorId: string;
   actorType: ActorType;
   verificationStatus: VerificationStatus;
 } | null;
@@ -207,17 +213,20 @@ export default function MarketplacePage() {
 
     const userId = data.session.user.id;
     setAuthUserId(userId);
-    const [f, b, s] = await Promise.all([
+    const [f, b, s, c] = await Promise.all([
       supabase.from("farmers").select("user_id, verification_status").eq("user_id", userId).maybeSingle(),
       supabase.from("buyers").select("user_id, verification_status").eq("user_id", userId).maybeSingle(),
       supabase.from("suppliers").select("user_id, verification_status").eq("user_id", userId).maybeSingle(),
+      supabase.from("cooperatives").select("id, verification_status").eq("user_id", userId).maybeSingle(),
     ]);
     if (f.data) {
-      setIdentity({ userId, actorType: "farmer", verificationStatus: f.data.verification_status });
+      setIdentity({ userId, actorId: userId, actorType: "farmer", verificationStatus: f.data.verification_status });
     } else if (b.data) {
-      setIdentity({ userId, actorType: "buyer", verificationStatus: b.data.verification_status });
+      setIdentity({ userId, actorId: userId, actorType: "buyer", verificationStatus: b.data.verification_status });
     } else if (s.data) {
-      setIdentity({ userId, actorType: "supplier", verificationStatus: s.data.verification_status });
+      setIdentity({ userId, actorId: userId, actorType: "supplier", verificationStatus: s.data.verification_status });
+    } else if (c.data) {
+      setIdentity({ userId, actorId: c.data.id, actorType: "cooperative", verificationStatus: c.data.verification_status });
     } else {
       setIdentity(null);
     }
@@ -362,7 +371,7 @@ export default function MarketplacePage() {
 
   // Split "my interests" into sent (I am the responder) vs. received (on
   // one of my own listings) now that identity and listings are known.
-  const myListingIds = new Set(listings.filter((l) => l.actor_id === identity?.userId).map((l) => l.id));
+  const myListingIds = new Set(listings.filter((l) => l.actor_id === identity?.actorId).map((l) => l.id));
   const sentByMe = myInterestsSent.filter((i) => i.responder_id === identity?.userId);
   const myInterestsReceived = myInterestsSent.filter((i) => myListingIds.has(i.listing_id));
 
@@ -396,7 +405,7 @@ export default function MarketplacePage() {
     const { data: inserted, error } = await supabase
       .from("listings")
       .insert({
-        actor_id: identity.userId,
+        actor_id: identity.actorId,
         actor_type: identity.actorType,
         listing_type: String(fd.get("listingType")),
         commodity: String(fd.get("commodity") ?? "") || null,
@@ -575,8 +584,8 @@ export default function MarketplacePage() {
     if (filterCommodity !== "all" && l.commodity !== filterCommodity) return false;
     return true;
   });
-  const myListings = listings.filter((l) => l.actor_id === identity?.userId);
-  const otherListings = browsableListings.filter((l) => l.actor_id !== identity?.userId && l.status === "active");
+  const myListings = listings.filter((l) => l.actor_id === identity?.actorId);
+  const otherListings = browsableListings.filter((l) => l.actor_id !== identity?.actorId && l.status === "active");
 
   return (
     <>
@@ -618,18 +627,22 @@ export default function MarketplacePage() {
 
             {identityChecked && !identity && (
               <p className="mt-6 rounded-2xl border border-harvest-gold/20 bg-harvest-gold/5 p-5 text-sm text-forest-dark/70">
-                No farmer, buyer or supplier registration is linked to this email, so there is nothing to
-                post from yet. You can still browse below. Register via{" "}
+                No farmer, buyer, supplier or cooperative registration is linked to this email, so
+                there is nothing to post from yet. You can still browse below. Register via{" "}
                 <a href="/for-farmers" className="font-semibold text-forest hover:text-forest-dark">
                   For Farmers
                 </a>
                 ,{" "}
                 <a href="/for-buyers" className="font-semibold text-forest hover:text-forest-dark">
                   For Buyers
-                </a>{" "}
-                or{" "}
+                </a>
+                ,{" "}
                 <a href="/partnerships" className="font-semibold text-forest hover:text-forest-dark">
                   Partnerships
+                </a>{" "}
+                or{" "}
+                <a href="/for-cooperatives" className="font-semibold text-forest hover:text-forest-dark">
+                  For Cooperatives
                 </a>
                 .
               </p>

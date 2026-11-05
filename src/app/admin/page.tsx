@@ -14,6 +14,7 @@ type Tab =
   | "farmers"
   | "buyers"
   | "suppliers"
+  | "cooperatives"
   | "reporting"
   | "content"
   | "value-chains"
@@ -75,7 +76,22 @@ type Supplier = {
   verified_at: string | null;
 };
 
-type VerifiableEntity = "farmer" | "buyer" | "supplier";
+type Cooperative = {
+  id: string;
+  created_at: string;
+  name: string;
+  lead_contact_name: string;
+  email: string | null;
+  phone: string | null;
+  location_label: string | null;
+  primary_commodities: string[];
+  member_count_estimate: number | null;
+  status: string;
+  verification_status: "pending" | "verified" | "rejected";
+  verified_at: string | null;
+};
+
+type VerifiableEntity = "farmer" | "buyer" | "supplier" | "cooperative";
 
 function verificationBadge(status: string) {
   const colors: Record<string, string> = {
@@ -94,6 +110,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: "farmers", label: "Farmers" },
   { key: "buyers", label: "Buyers" },
   { key: "suppliers", label: "Suppliers" },
+  { key: "cooperatives", label: "Cooperatives" },
   { key: "reporting", label: "Reporting" },
   { key: "content", label: "Site Content" },
   { key: "value-chains", label: "Value Chains" },
@@ -122,6 +139,7 @@ export default function AdminDashboardPage() {
   const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [cooperatives, setCooperatives] = useState<Cooperative[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [verificationFilter, setVerificationFilter] = useState<"all" | "pending" | "verified" | "rejected">("all");
@@ -195,13 +213,20 @@ export default function AdminDashboardPage() {
         .order("created_at", { ascending: false });
       if (qError) setError(qError.message);
       else setBuyers(data as Buyer[]);
-    } else {
+    } else if (tab === "suppliers") {
       const { data, error: qError } = await supabase
         .from("suppliers")
         .select("*")
         .order("created_at", { ascending: false });
       if (qError) setError(qError.message);
       else setSuppliers(data as Supplier[]);
+    } else {
+      const { data, error: qError } = await supabase
+        .from("cooperatives")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (qError) setError(qError.message);
+      else setCooperatives(data as Cooperative[]);
     }
 
     setLoading(false);
@@ -238,7 +263,15 @@ export default function AdminDashboardPage() {
       setError(rpcError.message);
       return;
     }
-    loadTab(entityType === "farmer" ? "farmers" : entityType === "buyer" ? "buyers" : "suppliers");
+    loadTab(
+      entityType === "farmer"
+        ? "farmers"
+        : entityType === "buyer"
+          ? "buyers"
+          : entityType === "supplier"
+            ? "suppliers"
+            : "cooperatives"
+    );
   }
 
   useEffect(() => {
@@ -267,7 +300,15 @@ export default function AdminDashboardPage() {
       setError(`${failures.length} of ${selectedIds.size} record(s) failed: ${failures[0].error}`);
     }
     setSelectedIds(new Set());
-    loadTab(entityType === "farmer" ? "farmers" : entityType === "buyer" ? "buyers" : "suppliers");
+    loadTab(
+      entityType === "farmer"
+        ? "farmers"
+        : entityType === "buyer"
+          ? "buyers"
+          : entityType === "supplier"
+            ? "suppliers"
+            : "cooperatives"
+    );
   }
 
   function toggleSelected(id: string) {
@@ -765,6 +806,64 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               <VerificationControls entityType="supplier" row={row} />
+            </div>
+          ))}
+        </div>
+        );
+      })()}
+
+      {!loading && activeTab === "cooperatives" && (() => {
+        const filtered = cooperatives.filter((row) =>
+          matchesFilters(row, [row.name, row.lead_contact_name, row.email, row.location_label])
+        );
+        return (
+        <div className="mt-6 space-y-4">
+          <SearchFilterBar entityType="cooperative" selectableIds={filtered.map((r) => r.id)} />
+          {filtered.length === 0 && <p className="text-sm text-forest-dark/60">No cooperative registrations match.</p>}
+          {filtered.map((row) => (
+            <div key={row.id} className="rounded-2xl border border-forest/10 bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(row.id)}
+                    onChange={() => toggleSelected(row.id)}
+                    className="mt-1"
+                  />
+                  <div>
+                  <p className="font-semibold text-forest-dark">{row.name}</p>
+                  <p className="text-xs text-forest-dark/60">
+                    {row.lead_contact_name}
+                    {row.email ? ` · ${row.email}` : ""}
+                    {row.phone ? ` · ${row.phone}` : ""}
+                  </p>
+                  <p className="text-xs text-forest-dark/60">
+                    {row.location_label ?? "Location not provided"}
+                    {row.member_count_estimate ? ` · ~${row.member_count_estimate} members` : ""}
+                  </p>
+                  <p className="text-xs text-forest-dark/50">{formatDate(row.created_at)}</p>
+                  </div>
+                </div>
+                <select
+                  value={row.status}
+                  onChange={(e) => updateStatus("cooperatives", row.id, e.target.value)}
+                  className="rounded-lg border border-forest/20 px-3 py-1.5 text-sm"
+                >
+                  {leadStatuses.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                {row.primary_commodities.map((c) => (
+                  <span key={c} className="rounded-full bg-agri-green/10 px-3 py-1 text-agri-green">
+                    {c}
+                  </span>
+                ))}
+              </div>
+              <VerificationControls entityType="cooperative" row={row} />
             </div>
           ))}
         </div>

@@ -228,6 +228,14 @@ export const buyerValueProps = [
   "Explore long-term supply arrangements.",
 ];
 
+export const cooperativeValueProps = [
+  "Register your cooperative, VSLA, farmer group or association once, as a single entity.",
+  "Access clustered-demand opportunities sized for group rather than individual volumes.",
+  "Post and manage marketplace listings on behalf of your members.",
+  "Maintain a membership record linked to AgriXpert's farmer registry.",
+  "Strengthen your group's standing with buyers, suppliers and development partners.",
+];
+
 export const digitalCapabilities = [
   "Digital farmer registration.",
   "Farm and production records.",
@@ -287,6 +295,7 @@ export const footerColumns = [
       { label: "For Farmers", href: "/for-farmers" },
       { label: "For Buyers", href: "/for-buyers" },
       { label: "Partnerships", href: "/partnerships" },
+      { label: "For Cooperatives", href: "/for-cooperatives" },
     ],
   },
   {
