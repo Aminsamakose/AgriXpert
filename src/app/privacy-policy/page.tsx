@@ -3,6 +3,8 @@ import PageHero from "@/components/PageHero";
 import { contactEmail, stockImages } from "@/lib/site-data";
 import { pageMetadata } from "@/lib/seo";
 
+export const instant = false;
+
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy | AgriXpert",
   description: "How AgriXpert collects, uses and protects personal information submitted through this website.",
@@ -11,16 +13,29 @@ export const metadata: Metadata = pageMetadata({
 
 const COPYRIGHT_YEAR = 2026;
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ embed?: string }>;
+}) {
+  const embed = (await searchParams).embed === "1";
+
   return (
     <>
-      <PageHero
-        eyebrow="Legal"
-        title="Privacy Policy"
-        description="How AgriXpert collects, uses and protects your personal data."
-        image={stockImages.documentSigning}
-      />
-      <section className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
+      {embed ? (
+        <div className="px-6 pt-8 lg:px-10">
+          <p className="text-xs font-semibold uppercase tracking-wide text-harvest-gold">Legal</p>
+          <h1 className="mt-1 font-heading text-2xl font-bold text-forest">Privacy Policy</h1>
+        </div>
+      ) : (
+        <PageHero
+          eyebrow="Legal"
+          title="Privacy Policy"
+          description="How AgriXpert collects, uses and protects your personal data."
+          image={stockImages.documentSigning}
+        />
+      )}
+      <section className={`mx-auto max-w-3xl px-6 lg:px-10 ${embed ? "py-8" : "py-16"}`}>
         <div className="space-y-10 text-sm leading-relaxed text-forest-dark/80">
           <p className="text-xs font-medium uppercase tracking-wide text-forest-dark/50">
             Last updated: {COPYRIGHT_YEAR}

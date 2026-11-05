@@ -9,6 +9,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import SiteChrome from "@/components/SiteChrome";
 import { stockImages } from "@/lib/site-data";
 
 const SITE_URL = "https://agri-xpert.vercel.app";
@@ -45,9 +46,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-natural-white text-foreground">
-        <Nav />
+        <SiteChrome>
+          <Nav />
+        </SiteChrome>
         <main className="flex-1">{children}</main>
-        <Footer />
+        <SiteChrome>
+          <Footer />
+        </SiteChrome>
         <Analytics />
       </body>
     </html>

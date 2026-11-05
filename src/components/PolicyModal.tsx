@@ -29,7 +29,7 @@ export default function PolicyModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+        className="flex h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-forest/10 px-5 py-4">
           <h2 className="font-heading text-lg font-bold text-forest">{title}</h2>
@@ -44,7 +44,7 @@ export default function PolicyModal({
             </svg>
           </button>
         </div>
-        <iframe src={href} title={title} className="h-full w-full flex-1 border-0" />
+        <iframe src={`${href}?embed=1`} title={title} className="h-full w-full flex-1 border-0" />
       </div>
     </div>
   );

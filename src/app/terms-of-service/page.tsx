@@ -3,6 +3,8 @@ import PageHero from "@/components/PageHero";
 import { contactEmail, stockImages } from "@/lib/site-data";
 import { pageMetadata } from "@/lib/seo";
 
+export const instant = false;
+
 export const metadata: Metadata = pageMetadata({
   title: "Terms of Service | AgriXpert",
   description: "The terms governing use of the AgriXpert website and its agricultural value chain services.",
@@ -11,16 +13,29 @@ export const metadata: Metadata = pageMetadata({
 
 const COPYRIGHT_YEAR = 2026;
 
-export default function TermsOfServicePage() {
+export default async function TermsOfServicePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ embed?: string }>;
+}) {
+  const embed = (await searchParams).embed === "1";
+
   return (
     <>
-      <PageHero
-        eyebrow="Legal"
-        title="Terms of Service"
-        description="The terms that govern your use of the AgriXpert website and platform."
-        image={stockImages.documentSigning}
-      />
-      <section className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
+      {embed ? (
+        <div className="px-6 pt-8 lg:px-10">
+          <p className="text-xs font-semibold uppercase tracking-wide text-harvest-gold">Legal</p>
+          <h1 className="mt-1 font-heading text-2xl font-bold text-forest">Terms of Service</h1>
+        </div>
+      ) : (
+        <PageHero
+          eyebrow="Legal"
+          title="Terms of Service"
+          description="The terms that govern your use of the AgriXpert website and platform."
+          image={stockImages.documentSigning}
+        />
+      )}
+      <section className={`mx-auto max-w-3xl px-6 lg:px-10 ${embed ? "py-8" : "py-16"}`}>
         <div className="space-y-10 text-sm leading-relaxed text-forest-dark/80">
           <p className="text-xs font-medium uppercase tracking-wide text-forest-dark/50">
             Last updated: {COPYRIGHT_YEAR}
