@@ -448,7 +448,7 @@ export default function AdminDashboardPage() {
     router.replace("/admin/login");
   }
 
-  async function exportCsv(table: "farmers" | "buyers" | "suppliers") {
+  async function exportCsv(table: "farmers" | "buyers" | "suppliers" | "cooperatives") {
     setError(null);
     const { data, error: qError } = await supabase.from(table).select("*");
     if (qError) {
@@ -898,6 +898,12 @@ export default function AdminDashboardPage() {
                 className="rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
               >
                 Export Suppliers CSV
+              </button>
+              <button
+                onClick={() => exportCsv("cooperatives")}
+                className="rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+              >
+                Export Cooperatives CSV
               </button>
             </div>
           </div>
