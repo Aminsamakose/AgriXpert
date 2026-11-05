@@ -225,7 +225,7 @@ export default function AdminDashboardPage() {
 
   const [verifying, setVerifying] = useState<string | null>(null);
 
-  async function decide(entityType: VerifiableEntity, id: string, decision: "verified" | "rejected") {
+  async function decide(entityType: VerifiableEntity, id: string, decision: "verified" | "rejected" | "pending") {
     setVerifying(id);
     setError(null);
     const { error: rpcError } = await supabase.rpc("verify_entity", {
@@ -387,6 +387,16 @@ export default function AdminDashboardPage() {
           >
             {verifying === row.id ? "…" : "Reject"}
           </button>
+          {row.verification_status === "rejected" && (
+            <button
+              onClick={() => decide(entityType, row.id, "pending")}
+              disabled={verifying === row.id}
+              className="rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Send this applicant back to pending for a fresh review, e.g. after they've fixed what got them rejected"
+            >
+              {verifying === row.id ? "…" : "Reset to Pending"}
+            </button>
+          )}
         </div>
       </div>
     );
