@@ -101,6 +101,17 @@ type StorageBooking = {
   status: BookingStatus;
 };
 
+type Review = {
+  id: string;
+  subject_id: string;
+  reviewer_id: string;
+  booking_table: "equipment_bookings" | "storage_bookings" | "listing_interests";
+  booking_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
 function bookingStatusBadge(status: BookingStatus) {
   const colors: Record<BookingStatus, string> = {
     requested: "bg-harvest-gold/15 text-harvest-gold",
@@ -139,6 +150,7 @@ function statusBadge(status: string) {
 export default function MarketplacePage() {
   const [authState, setAuthState] = useState<"checking" | "signedOut" | "signedIn">("checking");
   const [email, setEmail] = useState<string | null>(null);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [identity, setIdentity] = useState<MyIdentity>(null);
   const [identityChecked, setIdentityChecked] = useState(false);
 
@@ -169,6 +181,17 @@ export default function MarketplacePage() {
   const [booking, setBooking] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
+  const [equipmentOwnerByEquipmentId, setEquipmentOwnerByEquipmentId] = useState<Record<string, string>>({});
+  const [storageOwnerByFacilityId, setStorageOwnerByFacilityId] = useState<Record<string, string>>({});
+  const [myReviews, setMyReviews] = useState<Review[]>([]);
+  const [reviewingFor, setReviewingFor] = useState<{
+    bookingTable: "equipment_bookings" | "storage_bookings";
+    bookingId: string;
+    subjectId: string;
+  } | null>(null);
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
   const checkSession = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) {
@@ -181,6 +204,7 @@ export default function MarketplacePage() {
     setAuthState("signedIn");
 
     const userId = data.session.user.id;
+    setAuthUserId(userId);
     const [f, b, s] = await Promise.all([
       supabase.from("farmers").select("user_id, verification_status").eq("user_id", userId).maybeSingle(),
       supabase.from("buyers").select("user_id, verification_status").eq("user_id", userId).maybeSingle(),
@@ -209,6 +233,14 @@ export default function MarketplacePage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    if (authUserId) {
+      const { data: reviewRows } = await supabase
+        .from("listing_reviews")
+        .select("id, subject_id, reviewer_id, booking_table, booking_id, rating, comment, created_at")
+        .or(`reviewer_id.eq.${authUserId},subject_id.eq.${authUserId}`)
+        .order("created_at", { ascending: false });
+      setMyReviews((reviewRows as Review[]) ?? []);
+    }
     const { data: listingRows } = await supabase
       .from("listings")
       .select(
@@ -261,6 +293,15 @@ export default function MarketplacePage() {
       storageRows.forEach((s) => (storageMap[s.listing_id] = s));
       setStorageByListing(storageMap);
 
+      const listingActorById: Record<string, string> = {};
+      loadedListings.forEach((l) => (listingActorById[l.id] = l.actor_id));
+      const equipOwnerMap: Record<string, string> = {};
+      equipRows.forEach((e) => (equipOwnerMap[e.id] = listingActorById[e.listing_id]));
+      setEquipmentOwnerByEquipmentId(equipOwnerMap);
+      const storageOwnerMap: Record<string, string> = {};
+      storageRows.forEach((s) => (storageOwnerMap[s.id] = listingActorById[s.listing_id]));
+      setStorageOwnerByFacilityId(storageOwnerMap);
+
       const equipIds = equipRows.map((e) => e.id);
       const facilityIds = storageRows.map((s) => s.id);
 
@@ -308,7 +349,7 @@ export default function MarketplacePage() {
     }
 
     setLoading(false);
-  }, []);
+  }, [authUserId]);
 
   useEffect(() => {
     if (authState === "signedIn") {
@@ -339,6 +380,8 @@ export default function MarketplacePage() {
     setAuthState("signedOut");
     setListings([]);
     setIdentity(null);
+    setAuthUserId(null);
+    setMyReviews([]);
   }
 
   async function handlePostListing(form: HTMLFormElement) {
@@ -484,6 +527,39 @@ export default function MarketplacePage() {
   async function setStorageBookingStatus(id: string, status: BookingStatus) {
     await supabase.from("storage_bookings").update({ status }).eq("id", id);
     loadData();
+  }
+
+  async function handleSubmitReview(
+    form: HTMLFormElement,
+    bookingTable: "equipment_bookings" | "storage_bookings",
+    bookingId: string,
+    subjectId: string
+  ) {
+    if (!identity) return;
+    setReviewing(true);
+    setReviewError(null);
+    const fd = new FormData(form);
+    const { error } = await supabase.from("listing_reviews").insert({
+      subject_id: subjectId,
+      reviewer_id: identity.userId,
+      booking_table: bookingTable,
+      booking_id: bookingId,
+      rating: Number(String(fd.get("rating") ?? "5")),
+      comment: String(fd.get("comment") ?? "") || null,
+    });
+    setReviewing(false);
+    if (error) {
+      setReviewError(error.message);
+      return;
+    }
+    setReviewingFor(null);
+    loadData();
+  }
+
+  function hasReviewed(bookingTable: "equipment_bookings" | "storage_bookings", bookingId: string) {
+    return myReviews.some(
+      (r) => r.reviewer_id === identity?.userId && r.booking_table === bookingTable && r.booking_id === bookingId
+    );
   }
 
   const canPost = identity?.verificationStatus === "verified";
@@ -742,6 +818,26 @@ export default function MarketplacePage() {
                           Mark Completed
                         </button>
                       )}
+                      {b.status === "completed" && !hasReviewed("equipment_bookings", b.id) && identity && (
+                        reviewingFor?.bookingId === b.id ? (
+                          <ReviewForm
+                            reviewing={reviewing}
+                            reviewError={reviewError}
+                            onCancel={() => setReviewingFor(null)}
+                            onSubmit={(form) => handleSubmitReview(form, "equipment_bookings", b.id, b.requester_id)}
+                          />
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setReviewError(null);
+                              setReviewingFor({ bookingTable: "equipment_bookings", bookingId: b.id, subjectId: b.requester_id });
+                            }}
+                            className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+                          >
+                            Review Customer
+                          </button>
+                        )
+                      )}
                     </div>
                   ))}
                   {storageBookingsOnMine.map((b) => (
@@ -778,6 +874,26 @@ export default function MarketplacePage() {
                           Mark Completed
                         </button>
                       )}
+                      {b.status === "completed" && !hasReviewed("storage_bookings", b.id) && identity && (
+                        reviewingFor?.bookingId === b.id ? (
+                          <ReviewForm
+                            reviewing={reviewing}
+                            reviewError={reviewError}
+                            onCancel={() => setReviewingFor(null)}
+                            onSubmit={(form) => handleSubmitReview(form, "storage_bookings", b.id, b.requester_id)}
+                          />
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setReviewError(null);
+                              setReviewingFor({ bookingTable: "storage_bookings", bookingId: b.id, subjectId: b.requester_id });
+                            }}
+                            className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+                          >
+                            Review Customer
+                          </button>
+                        )
+                      )}
                     </div>
                   ))}
                 </div>
@@ -807,6 +923,32 @@ export default function MarketplacePage() {
                           Cancel
                         </button>
                       )}
+                      {b.status === "completed" && !hasReviewed("equipment_bookings", b.id) && identity && (
+                        reviewingFor?.bookingId === b.id ? (
+                          <ReviewForm
+                            reviewing={reviewing}
+                            reviewError={reviewError}
+                            onCancel={() => setReviewingFor(null)}
+                            onSubmit={(form) =>
+                              handleSubmitReview(form, "equipment_bookings", b.id, equipmentOwnerByEquipmentId[b.equipment_id])
+                            }
+                          />
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setReviewError(null);
+                              setReviewingFor({
+                                bookingTable: "equipment_bookings",
+                                bookingId: b.id,
+                                subjectId: equipmentOwnerByEquipmentId[b.equipment_id],
+                              });
+                            }}
+                            className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+                          >
+                            Review Provider
+                          </button>
+                        )
+                      )}
                     </div>
                   ))}
                   {storageBookingsIRequested.map((b) => (
@@ -827,8 +969,51 @@ export default function MarketplacePage() {
                           Cancel
                         </button>
                       )}
+                      {b.status === "completed" && !hasReviewed("storage_bookings", b.id) && identity && (
+                        reviewingFor?.bookingId === b.id ? (
+                          <ReviewForm
+                            reviewing={reviewing}
+                            reviewError={reviewError}
+                            onCancel={() => setReviewingFor(null)}
+                            onSubmit={(form) =>
+                              handleSubmitReview(form, "storage_bookings", b.id, storageOwnerByFacilityId[b.facility_id])
+                            }
+                          />
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setReviewError(null);
+                              setReviewingFor({
+                                bookingTable: "storage_bookings",
+                                bookingId: b.id,
+                                subjectId: storageOwnerByFacilityId[b.facility_id],
+                              });
+                            }}
+                            className="mt-3 rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5"
+                          >
+                            Review Provider
+                          </button>
+                        )
+                      )}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Reviews about me */}
+            {identity && myReviews.filter((r) => r.subject_id === identity.userId).length > 0 && (
+              <div className="mt-10">
+                <h2 className="font-heading text-lg font-bold text-forest">Reviews About Me</h2>
+                <div className="mt-3 space-y-3">
+                  {myReviews
+                    .filter((r) => r.subject_id === identity.userId)
+                    .map((r) => (
+                      <div key={r.id} className="rounded-2xl border border-forest/10 bg-white p-4">
+                        <p className="text-sm font-semibold text-harvest-gold">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</p>
+                        {r.comment && <p className="mt-1 text-sm text-forest-dark/70">{r.comment}</p>}
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
@@ -1137,6 +1322,60 @@ function PostListingForm({
           type="button"
           onClick={onCancel}
           className="rounded-full border border-forest/20 px-5 py-2.5 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function ReviewForm({
+  reviewing,
+  reviewError,
+  onCancel,
+  onSubmit,
+}: {
+  reviewing: boolean;
+  reviewError: string | null;
+  onCancel: () => void;
+  onSubmit: (form: HTMLFormElement) => void;
+}) {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(e.currentTarget);
+      }}
+      className="mt-3 space-y-3 rounded-xl border border-forest/10 bg-forest/5 p-4"
+    >
+      <div>
+        <label className="text-xs font-medium text-forest-dark">Rating</label>
+        <select name="rating" defaultValue="5" className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm">
+          <option value="5">★★★★★ Excellent</option>
+          <option value="4">★★★★☆ Good</option>
+          <option value="3">★★★☆☆ Okay</option>
+          <option value="2">★★☆☆☆ Poor</option>
+          <option value="1">★☆☆☆☆ Very Poor</option>
+        </select>
+      </div>
+      <div>
+        <label className="text-xs font-medium text-forest-dark">Comment</label>
+        <textarea name="comment" rows={2} className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+      </div>
+      {reviewError && <p className="text-sm font-medium text-red-600">{reviewError}</p>}
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={reviewing}
+          className="rounded-full bg-forest px-4 py-2 text-xs font-semibold text-natural-white hover:bg-forest-dark disabled:cursor-not-allowed disabled:bg-forest/40"
+        >
+          {reviewing ? "Submitting…" : "Submit Review"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full border border-forest/20 px-4 py-2 text-xs font-semibold text-forest-dark hover:bg-forest/5"
         >
           Cancel
         </button>
