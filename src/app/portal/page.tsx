@@ -107,6 +107,11 @@ export default function PortalPage() {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
       setEmail(data.session.user.email ?? null);
+      // Best-effort: link this login to any farmer/buyer/supplier record(s)
+      // matching the signed-in email across all three tables (a user can
+      // hold more than one role). Safe to call every sign-in — it only
+      // updates rows where user_id is still null.
+      await supabase.rpc("link_my_identity");
       setAuthState("signedIn");
     } else {
       setAuthState("signedOut");
