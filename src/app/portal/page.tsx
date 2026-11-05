@@ -64,7 +64,7 @@ function VerificationBanner({ status }: { status: VerificationStatus }) {
   return (
     <p className="mt-3 rounded-xl bg-harvest-gold/10 px-3 py-2 text-xs font-medium text-harvest-gold">
       Pending verification — an AgriXpert admin is reviewing this registration. Some marketplace
-      features will be unavailable until it's approved.
+      features will be unavailable until it&apos;s approved.
     </p>
   );
 }
@@ -124,6 +124,7 @@ function CommodityToggle({
 export default function PortalPage() {
   const [authState, setAuthState] = useState<"checking" | "signedOut" | "signedIn">("checking");
   const [email, setEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [farmerRecords, setFarmerRecords] = useState<FarmerRecord[]>([]);
   const [buyerRecords, setBuyerRecords] = useState<BuyerRecord[]>([]);
   const [supplierRecords, setSupplierRecords] = useState<SupplierRecord[]>([]);
@@ -141,6 +142,13 @@ export default function PortalPage() {
       // hold more than one role). Safe to call every sign-in — it only
       // updates rows where user_id is still null.
       await supabase.rpc("link_my_identity");
+      // An admin account is not a farmer/buyer/supplier. Without this check,
+      // RLS's "is_admin() OR email match" SELECT policy lets an admin see
+      // every registration on this page — every other actor's data, shown
+      // as if it were the admin's own, with an "Edit Details" button next
+      // to each one. Steer them to the real admin dashboard instead.
+      const { data: adminCheck } = await supabase.rpc("is_admin");
+      setIsAdmin(Boolean(adminCheck));
       setAuthState("signedIn");
     } else {
       setAuthState("signedOut");
@@ -180,11 +188,11 @@ export default function PortalPage() {
   }, []);
 
   useEffect(() => {
-    if (authState === "signedIn") {
+    if (authState === "signedIn" && !isAdmin) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetch once signed in
       loadRecords();
     }
-  }, [authState, loadRecords]);
+  }, [authState, isAdmin, loadRecords]);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -268,7 +276,7 @@ export default function PortalPage() {
         <div className="rounded-2xl border border-agri-green/20 bg-agri-green/5 p-5">
           <p className="text-sm font-semibold text-forest">Our focus is access</p>
           <p className="mt-2 text-sm text-forest-dark/70">
-            AgriXpert's role is to get farmers and agricultural businesses access: to buyers,
+            AgriXpert&apos;s role is to get farmers and agricultural businesses access: to buyers,
             mechanisation, storage, processing and finance, whether through our own coordination or
             through specialist partners in these areas. Equipment, logistics and financial-service
             providers register here so we can connect farmers to them. We are also building toward
@@ -313,6 +321,17 @@ export default function PortalPage() {
                 </button>
               </div>
 
+              {isAdmin ? (
+                <p className="mt-6 rounded-2xl border border-harvest-gold/20 bg-harvest-gold/5 p-5 text-sm text-forest-dark/70">
+                  This account is an AgriXpert staff account, not a farmer/buyer/supplier
+                  registration. Use the{" "}
+                  <a href="/admin" className="font-semibold text-forest hover:text-forest-dark">
+                    staff dashboard
+                  </a>{" "}
+                  to review and verify registrations.
+                </p>
+              ) : (
+                <>
               {loading && <p className="mt-6 text-sm text-forest-dark/60">Loading your records…</p>}
 
               {!loading && !hasAnyRecord && (
@@ -384,6 +403,8 @@ export default function PortalPage() {
                     onSave={saveSupplier}
                   />
                 ))}
+                </>
+              )}
             </div>
           )}
         </div>
