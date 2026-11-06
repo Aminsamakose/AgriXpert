@@ -156,6 +156,8 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [verificationFilter, setVerificationFilter] = useState<"all" | "pending" | "verified" | "rejected">("all");
+  const [stageFilter, setStageFilter] = useState<"all" | "new" | "contacted" | "engaged" | "active" | "dormant">("all");
+  const [stageMap, setStageMap] = useState<Record<string, string>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkWorking, setBulkWorking] = useState(false);
 
@@ -249,6 +251,19 @@ export default function AdminDashboardPage() {
       else setCooperatives(data as Cooperative[]);
     }
 
+    if (tab === "farmers" || tab === "buyers" || tab === "suppliers" || tab === "cooperatives") {
+      const entityType = tab === "farmers" ? "farmer" : tab === "buyers" ? "buyer" : tab === "suppliers" ? "supplier" : "cooperative";
+      const { data: stageRows } = await supabase
+        .from("crm_pipeline")
+        .select("entity_id, stage")
+        .eq("entity_type", entityType);
+      const map: Record<string, string> = {};
+      (stageRows ?? []).forEach((r: { entity_id: string; stage: string }) => {
+        map[r.entity_id] = r.stage;
+      });
+      setStageMap(map);
+    }
+
     setLoading(false);
   }, []);
 
@@ -298,6 +313,7 @@ export default function AdminDashboardPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset filter/selection UI state on tab change
     setSearchQuery("");
     setVerificationFilter("all");
+    setStageFilter("all");
     setSelectedIds(new Set());
   }, [activeTab]);
 
@@ -340,11 +356,12 @@ export default function AdminDashboardPage() {
     });
   }
 
-  function matchesFilters<T extends { verification_status: string }>(
+  function matchesFilters<T extends { id: string; verification_status: string }>(
     row: T,
     searchFields: (string | null | undefined)[]
   ) {
     if (verificationFilter !== "all" && row.verification_status !== verificationFilter) return false;
+    if (stageFilter !== "all" && (stageMap[row.id] ?? "new") !== stageFilter) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       return searchFields.some((f) => f && f.toLowerCase().includes(q));
@@ -379,6 +396,18 @@ export default function AdminDashboardPage() {
             <option value="pending">Pending</option>
             <option value="verified">Verified</option>
             <option value="rejected">Rejected</option>
+          </select>
+          <select
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value as typeof stageFilter)}
+            className="rounded-lg border border-forest/20 px-3 py-2 text-sm"
+          >
+            <option value="all">All CRM stages</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="engaged">Engaged</option>
+            <option value="active">Active</option>
+            <option value="dormant">Dormant</option>
           </select>
           {selectableIds.length > 0 && (
             <label className="flex items-center gap-2 text-xs font-semibold text-forest-dark/70">
@@ -719,7 +748,12 @@ export default function AdminDashboardPage() {
                 )}
               </div>
               <VerificationControls entityType="farmer" row={row} />
-              <CrmPanel entityType="farmer" entityId={row.id} entityLabel={row.full_name} />
+              <CrmPanel
+                entityType="farmer"
+                entityId={row.id}
+                entityLabel={row.full_name}
+                onStageChange={(stage) => setStageMap((prev) => ({ ...prev, [row.id]: stage }))}
+              />
             </div>
           ))}
         </div>
@@ -777,7 +811,12 @@ export default function AdminDashboardPage() {
                 </p>
               )}
               <VerificationControls entityType="buyer" row={row} />
-              <CrmPanel entityType="buyer" entityId={row.id} entityLabel={row.company_name} />
+              <CrmPanel
+                entityType="buyer"
+                entityId={row.id}
+                entityLabel={row.company_name}
+                onStageChange={(stage) => setStageMap((prev) => ({ ...prev, [row.id]: stage }))}
+              />
             </div>
           ))}
         </div>
@@ -829,7 +868,12 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               <VerificationControls entityType="supplier" row={row} />
-              <CrmPanel entityType="supplier" entityId={row.id} entityLabel={row.company_name} />
+              <CrmPanel
+                entityType="supplier"
+                entityId={row.id}
+                entityLabel={row.company_name}
+                onStageChange={(stage) => setStageMap((prev) => ({ ...prev, [row.id]: stage }))}
+              />
             </div>
           ))}
         </div>
@@ -888,7 +932,12 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               <VerificationControls entityType="cooperative" row={row} />
-              <CrmPanel entityType="cooperative" entityId={row.id} entityLabel={row.name} />
+              <CrmPanel
+                entityType="cooperative"
+                entityId={row.id}
+                entityLabel={row.name}
+                onStageChange={(stage) => setStageMap((prev) => ({ ...prev, [row.id]: stage }))}
+              />
             </div>
           ))}
         </div>

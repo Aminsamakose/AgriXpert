@@ -36,6 +36,7 @@ type Task = {
   status: "open" | "done";
   created_at: string;
   completed_at: string | null;
+  assigned_to: string | null;
 };
 
 function formatDate(iso: string) {
@@ -46,10 +47,12 @@ export default function CrmPanel({
   entityType,
   entityId,
   entityLabel,
+  onStageChange,
 }: {
   entityType: EntityType;
   entityId: string;
   entityLabel: string;
+  onStageChange?: (stage: Stage) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,7 +64,15 @@ export default function CrmPanel({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDue, setNewTaskDue] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState("");
   const [addingTask, setAddingTask] = useState(false);
+  const [staffEmails, setStaffEmails] = useState<string[]>([]);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteBody, setEditingNoteBody] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editingTaskTitle, setEditingTaskTitle] = useState("");
+  const [editingTaskDue, setEditingTaskDue] = useState("");
+  const [editingTaskAssignee, setEditingTaskAssignee] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -82,7 +93,7 @@ export default function CrmPanel({
         .order("created_at", { ascending: false }),
       supabase
         .from("crm_tasks")
-        .select("id, title, due_date, status, created_at, completed_at")
+        .select("id, title, due_date, status, created_at, completed_at, assigned_to")
         .eq("entity_type", entityType)
         .eq("entity_id", entityId)
         .order("status", { ascending: true })
@@ -100,6 +111,11 @@ export default function CrmPanel({
     if (open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetch on expand
       load();
+      supabase
+        .from("admins")
+        .select("email")
+        .order("email", { ascending: true })
+        .then(({ data }) => setStaffEmails((data ?? []).map((r: { email: string }) => r.email)));
     }
   }, [open, load]);
 
@@ -115,6 +131,7 @@ export default function CrmPanel({
       );
     setSavingStage(false);
     if (upsertError) setError(upsertError.message);
+    else onStageChange?.(next);
   }
 
   async function handleAddNote(e: FormEvent<HTMLFormElement>) {
@@ -147,6 +164,7 @@ export default function CrmPanel({
       entity_label: entityLabel,
       title,
       due_date: newTaskDue || null,
+      assigned_to: newTaskAssignee || null,
     });
     setAddingTask(false);
     if (insertError) {
@@ -155,6 +173,7 @@ export default function CrmPanel({
     }
     setNewTaskTitle("");
     setNewTaskDue("");
+    setNewTaskAssignee("");
     load();
   }
 
@@ -167,6 +186,73 @@ export default function CrmPanel({
       .eq("id", task.id);
     if (updateError) {
       setError(updateError.message);
+      return;
+    }
+    load();
+  }
+
+  function startEditNote(note: Note) {
+    setEditingNoteId(note.id);
+    setEditingNoteBody(note.body);
+  }
+
+  async function saveEditNote() {
+    if (!editingNoteId) return;
+    const body = editingNoteBody.trim();
+    if (!body) return;
+    setError(null);
+    const { error: updateError } = await supabase.from("crm_notes").update({ body }).eq("id", editingNoteId);
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+    setEditingNoteId(null);
+    setEditingNoteBody("");
+    load();
+  }
+
+  async function deleteNote(id: string) {
+    setError(null);
+    const { error: deleteError } = await supabase.from("crm_notes").delete().eq("id", id);
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
+    load();
+  }
+
+  function startEditTask(task: Task) {
+    setEditingTaskId(task.id);
+    setEditingTaskTitle(task.title);
+    setEditingTaskDue(task.due_date ?? "");
+    setEditingTaskAssignee(task.assigned_to ?? "");
+  }
+
+  async function saveEditTask() {
+    if (!editingTaskId) return;
+    const title = editingTaskTitle.trim();
+    if (!title) return;
+    setError(null);
+    const { error: updateError } = await supabase
+      .from("crm_tasks")
+      .update({ title, due_date: editingTaskDue || null, assigned_to: editingTaskAssignee || null })
+      .eq("id", editingTaskId);
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+    setEditingTaskId(null);
+    setEditingTaskTitle("");
+    setEditingTaskDue("");
+    setEditingTaskAssignee("");
+    load();
+  }
+
+  async function deleteTask(id: string) {
+    setError(null);
+    const { error: deleteError } = await supabase.from("crm_tasks").delete().eq("id", id);
+    if (deleteError) {
+      setError(deleteError.message);
       return;
     }
     load();
@@ -226,8 +312,52 @@ export default function CrmPanel({
                 {tasks.map((t) => {
                   const overdue =
                     t.status === "open" && t.due_date && new Date(t.due_date) < new Date(new Date().toDateString());
+                  if (editingTaskId === t.id) {
+                    return (
+                      <li key={t.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-white p-2 text-sm">
+                        <input
+                          value={editingTaskTitle}
+                          onChange={(e) => setEditingTaskTitle(e.target.value)}
+                          className="min-w-[160px] flex-1 rounded-lg border border-forest/20 px-2 py-1 text-xs"
+                        />
+                        <input
+                          type="date"
+                          value={editingTaskDue}
+                          onChange={(e) => setEditingTaskDue(e.target.value)}
+                          className="rounded-lg border border-forest/20 px-2 py-1 text-xs"
+                        />
+                        <select
+                          value={editingTaskAssignee}
+                          onChange={(e) => setEditingTaskAssignee(e.target.value)}
+                          className="rounded-lg border border-forest/20 px-2 py-1 text-xs"
+                        >
+                          <option value="">Unassigned</option>
+                          {staffEmails.map((email) => (
+                            <option key={email} value={email}>
+                              {email}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={saveEditTask}
+                          disabled={!editingTaskTitle.trim()}
+                          className="rounded-full bg-forest px-3 py-1 text-xs font-semibold text-natural-white disabled:opacity-40"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingTaskId(null)}
+                          className="text-xs font-semibold text-forest-dark/60 hover:text-forest-dark"
+                        >
+                          Cancel
+                        </button>
+                      </li>
+                    );
+                  }
                   return (
-                    <li key={t.id} className="flex items-center gap-2 text-sm">
+                    <li key={t.id} className="group flex items-center gap-2 text-sm">
                       <input
                         type="checkbox"
                         checked={t.status === "done"}
@@ -242,6 +372,25 @@ export default function CrmPanel({
                           due {formatDate(t.due_date)}
                         </span>
                       )}
+                      {t.assigned_to && (
+                        <span className="rounded-full bg-forest/10 px-2 py-0.5 text-[10px] font-semibold text-forest">
+                          {t.assigned_to}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => startEditTask(t)}
+                        className="ml-auto text-xs text-forest-dark/40 hover:text-forest-dark"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteTask(t.id)}
+                        className="text-xs text-red-500/70 hover:text-red-600"
+                      >
+                        Delete
+                      </button>
                     </li>
                   );
                 })}
@@ -260,6 +409,18 @@ export default function CrmPanel({
                 onChange={(e) => setNewTaskDue(e.target.value)}
                 className="rounded-lg border border-forest/20 px-2 py-1.5 text-xs"
               />
+              <select
+                value={newTaskAssignee}
+                onChange={(e) => setNewTaskAssignee(e.target.value)}
+                className="rounded-lg border border-forest/20 px-2 py-1.5 text-xs"
+              >
+                <option value="">Unassigned</option>
+                {staffEmails.map((email) => (
+                  <option key={email} value={email}>
+                    {email}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 disabled={addingTask || !newTaskTitle.trim()}
@@ -275,12 +436,56 @@ export default function CrmPanel({
             {!loading && notes.length === 0 && <p className="mt-1.5 text-xs text-forest-dark/50">No notes yet.</p>}
             {!loading && notes.length > 0 && (
               <ul className="mt-1.5 space-y-2">
-                {notes.map((n) => (
-                  <li key={n.id} className="rounded-lg bg-white p-2 text-xs text-forest-dark/80">
-                    <p>{n.body}</p>
-                    <p className="mt-1 text-[10px] text-forest-dark/40">{formatDate(n.created_at)}</p>
-                  </li>
-                ))}
+                {notes.map((n) =>
+                  editingNoteId === n.id ? (
+                    <li key={n.id} className="rounded-lg bg-white p-2 text-xs">
+                      <textarea
+                        value={editingNoteBody}
+                        onChange={(e) => setEditingNoteBody(e.target.value)}
+                        rows={2}
+                        className="w-full rounded-lg border border-forest/20 px-2 py-1 text-xs"
+                      />
+                      <div className="mt-1 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={saveEditNote}
+                          disabled={!editingNoteBody.trim()}
+                          className="rounded-full bg-forest px-3 py-1 text-xs font-semibold text-natural-white disabled:opacity-40"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingNoteId(null)}
+                          className="text-xs font-semibold text-forest-dark/60 hover:text-forest-dark"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </li>
+                  ) : (
+                    <li key={n.id} className="group rounded-lg bg-white p-2 text-xs text-forest-dark/80">
+                      <p>{n.body}</p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <p className="text-[10px] text-forest-dark/40">{formatDate(n.created_at)}</p>
+                        <button
+                          type="button"
+                          onClick={() => startEditNote(n)}
+                          className="ml-auto text-[10px] text-forest-dark/40 hover:text-forest-dark"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteNote(n.id)}
+                          className="text-[10px] text-red-500/70 hover:text-red-600"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  )
+                )}
               </ul>
             )}
             <form onSubmit={handleAddNote} className="mt-2 flex gap-2">

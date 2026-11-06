@@ -11,6 +11,7 @@ type Task = {
   due_date: string | null;
   status: "open" | "done";
   created_at: string;
+  assigned_to: string | null;
 };
 
 const entityTypeLabels: Record<string, string> = {
@@ -31,16 +32,22 @@ export default function FollowUpsManager() {
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [showDone, setShowDone] = useState(false);
+  const [myTasksOnly, setMyTasksOnly] = useState(false);
+  const [currentEmail, setCurrentEmail] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: loadError } = await supabase
-      .from("crm_tasks")
-      .select("id, entity_type, entity_label, title, due_date, status, created_at")
-      .order("status", { ascending: true })
-      .order("due_date", { ascending: true, nullsFirst: false })
-      .limit(200);
+    const [{ data: sessionData }, { data, error: loadError }] = await Promise.all([
+      supabase.auth.getSession(),
+      supabase
+        .from("crm_tasks")
+        .select("id, entity_type, entity_label, title, due_date, status, created_at, assigned_to")
+        .order("status", { ascending: true })
+        .order("due_date", { ascending: true, nullsFirst: false })
+        .limit(200),
+    ]);
+    setCurrentEmail(sessionData.session?.user.email ?? null);
     if (loadError) setError(loadError.message);
     else setTasks((data as Task[]) ?? []);
     setLoading(false);
@@ -68,7 +75,14 @@ export default function FollowUpsManager() {
   }
 
   const today = new Date(new Date().toDateString());
-  const visible = tasks.filter((t) => showDone || t.status === "open");
+  const visible = tasks.filter(
+    (t) =>
+      (showDone || t.status === "open") &&
+      (!myTasksOnly || (currentEmail && t.assigned_to?.toLowerCase() === currentEmail.toLowerCase()))
+  );
+  const myOpenCount = tasks.filter(
+    (t) => t.status === "open" && currentEmail && t.assigned_to?.toLowerCase() === currentEmail.toLowerCase()
+  ).length;
   const openCount = tasks.filter((t) => t.status === "open").length;
   const overdueCount = tasks.filter(
     (t) => t.status === "open" && t.due_date && new Date(t.due_date) < today
@@ -82,12 +96,19 @@ export default function FollowUpsManager() {
           <p className="mt-1 text-sm text-forest-dark/60">
             {openCount} open task{openCount === 1 ? "" : "s"}
             {overdueCount > 0 && <span className="font-semibold text-red-600"> · {overdueCount} overdue</span>}
+            {currentEmail && <span> · {myOpenCount} assigned to you</span>}
           </p>
         </div>
-        <label className="flex items-center gap-2 text-xs font-semibold text-forest-dark/70">
-          <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />
-          Show completed
-        </label>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-xs font-semibold text-forest-dark/70">
+            <input type="checkbox" checked={myTasksOnly} onChange={(e) => setMyTasksOnly(e.target.checked)} />
+            My tasks only
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold text-forest-dark/70">
+            <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />
+            Show completed
+          </label>
+        </div>
       </div>
 
       {error && <p className="mt-3 text-sm font-medium text-red-600">{error}</p>}
@@ -124,6 +145,11 @@ export default function FollowUpsManager() {
                 <span className={t.status === "done" ? "text-forest-dark/40 line-through" : "text-forest-dark/80"}>
                   {t.title}
                 </span>
+                {t.assigned_to && (
+                  <span className="rounded-full bg-forest/10 px-2 py-0.5 text-[10px] font-semibold text-forest">
+                    {t.assigned_to}
+                  </span>
+                )}
                 {t.due_date && (
                   <span className={`ml-auto text-xs ${overdue ? "font-semibold text-red-600" : "text-forest-dark/50"}`}>
                     due {formatDate(t.due_date)}
