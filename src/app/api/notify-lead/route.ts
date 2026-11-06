@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { contactEmail } from "@/lib/site-data";
 
 type LeadField = { label: string; value: string };
@@ -20,17 +21,24 @@ function escapeHtml(value: string) {
 
 /**
  * Sends an email notification for a new lead (contact enquiry, farmer,
- * buyer or supplier registration) via Resend.
+ * buyer or supplier registration) over plain SMTP, using our own mailbox
+ * rather than a third-party email API.
  *
  * This is intentionally best-effort: the lead has already been saved to its
- * Supabase table by the time this route is called, so a missing API key or
- * a delivery failure here must never surface as an error to the person
+ * Supabase table by the time this route is called, so missing SMTP config
+ * or a delivery failure here must never surface as an error to the person
  * submitting the form — it only means the notification email didn't go
  * out. The lead is still visible in /admin.
  *
- * Requires a RESEND_API_KEY environment variable (set in Vercel project
- * settings) to actually send. Without one, this route responds 200 and
- * does nothing, so every form keeps working either way.
+ * Requires SMTP_HOST, SMTP_PORT, SMTP_USER and SMTP_PASS environment
+ * variables (set in Vercel project settings) to actually send. Without
+ * them, this route responds 200 and does nothing, so every form keeps
+ * working either way.
+ *
+ * For a Google Workspace mailbox (samakose.com's current MX): SMTP_HOST=
+ * smtp.gmail.com, SMTP_PORT=465, SMTP_USER=the sending address, SMTP_PASS=
+ * an app password generated for that account (Google Account > Security >
+ * App passwords; requires 2-Step Verification to be on).
  */
 export async function POST(request: Request) {
   let payload: LeadPayload;
@@ -45,15 +53,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Missing required fields" }, { status: 400 });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    // No email provider configured yet — the lead is still saved to the
-    // database and visible in the admin dashboard. Nothing to do here.
-    return NextResponse.json({ ok: true, sent: false, reason: "RESEND_API_KEY not configured" });
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !port || !user || !pass) {
+    // No mailbox configured yet — the lead is still saved to the database
+    // and visible in the admin dashboard. Nothing to do here.
+    return NextResponse.json({ ok: true, sent: false, reason: "SMTP not configured" });
   }
 
   const notifyEmail = process.env.NOTIFY_EMAIL || contactEmail;
-  const fromAddress = process.env.NOTIFY_FROM_EMAIL || "AgriXpert Website <onboarding@resend.dev>";
+  const fromAddress = process.env.NOTIFY_FROM_EMAIL || user;
 
   const rowsHtml = fields
     .map(
@@ -63,34 +75,28 @@ export async function POST(request: Request) {
     .join("");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: fromAddress,
-        to: [notifyEmail],
-        ...(replyTo ? { reply_to: replyTo } : {}),
-        subject,
-        html: `
-          ${rowsHtml}
-          <hr />
-          <p style="color:#888;font-size:12px;">Sent automatically from the AgriXpert website. This submission is also saved in the admin dashboard.</p>
-        `,
-      }),
+    const transporter = nodemailer.createTransport({
+      host,
+      port: Number(port),
+      secure: Number(port) === 465,
+      auth: { user, pass },
     });
 
-    if (!res.ok) {
-      const body = await res.text();
-      console.error("Resend notification failed:", res.status, body);
-      return NextResponse.json({ ok: true, sent: false, reason: "Email provider error" });
-    }
+    await transporter.sendMail({
+      from: fromAddress,
+      to: notifyEmail,
+      ...(replyTo ? { replyTo } : {}),
+      subject,
+      html: `
+        ${rowsHtml}
+        <hr />
+        <p style="color:#888;font-size:12px;">Sent automatically from the AgriXpert website. This submission is also saved in the admin dashboard.</p>
+      `,
+    });
 
     return NextResponse.json({ ok: true, sent: true });
   } catch (err) {
-    console.error("Resend notification error:", err);
-    return NextResponse.json({ ok: true, sent: false, reason: "Network error" });
+    console.error("SMTP notification error:", err);
+    return NextResponse.json({ ok: true, sent: false, reason: "Delivery error" });
   }
 }
