@@ -304,3 +304,79 @@ export function renderNoticeEmail({
     footerNote ?? "This is an automated notification from the AgriXpert platform."
   );
 }
+
+export type DigestTask = {
+  entityType: string;
+  entityLabel: string;
+  title: string;
+  dueDate: string;
+  overdue: boolean;
+};
+
+/**
+ * Daily follow-up reminder digest: one email per staff member listing
+ * their own open CRM tasks that are due today or overdue.
+ */
+export function renderDigestEmail({
+  name,
+  tasks,
+  adminUrl,
+}: {
+  name: string;
+  tasks: DigestTask[];
+  adminUrl: string;
+}) {
+  const overdueCount = tasks.filter((t) => t.overdue).length;
+
+  const rowsHtml = tasks
+    .map(
+      (t, i) => `
+        <tr>
+          <td style="padding:12px 20px;${i > 0 ? `border-top:1px solid ${BRAND.border};` : ""}vertical-align:top;">
+            <span style="display:inline-block;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:${BRAND.muted};margin-bottom:2px;">
+              ${escapeHtml(t.entityType)} · ${escapeHtml(t.entityLabel)}
+            </span>
+            <br />
+            <span style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};">
+              ${escapeHtml(t.title)}
+            </span>
+          </td>
+          <td style="padding:12px 20px;${i > 0 ? `border-top:1px solid ${BRAND.border};` : ""}vertical-align:top;text-align:right;white-space:nowrap;">
+            <span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;color:${t.overdue ? "#C0392B" : BRAND.muted};">
+              ${t.overdue ? "Overdue" : "Due today"}
+            </span>
+          </td>
+        </tr>`
+    )
+    .join("");
+
+  const body = `
+    <tr>
+      <td style="padding:28px 28px 8px 28px;">
+        ${badgePill("FOLLOW-UP DIGEST", BRAND.harvestGold)}
+        <h1 style="margin:14px 0 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;color:${BRAND.forestDark};">
+          Your open follow-ups
+        </h1>
+        <p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:${BRAND.ink};line-height:1.6;">
+          Hi ${escapeHtml(name)}, you have ${tasks.length} open follow-up${tasks.length === 1 ? "" : "s"} due or overdue${
+            overdueCount > 0 ? `, ${overdueCount} of them overdue` : ""
+          }.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:16px 28px 8px 28px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.border};border-radius:8px;overflow:hidden;">
+          ${rowsHtml}
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:20px 28px 4px 28px;">
+        ${ctaButton("Open Follow-ups", adminUrl, BRAND.agriGreen)}
+      </td>
+    </tr>
+  `;
+
+  return shell(body, "You're getting this because tasks are assigned to you in the AgriXpert admin dashboard.");
+}
