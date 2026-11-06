@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ContentManager from "@/components/admin/ContentManager";
 import PageContentManager from "@/components/admin/PageContentManager";
@@ -141,12 +141,37 @@ function formatDate(iso: string) {
 }
 
 export default function AdminDashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminDashboardInner />
+    </Suspense>
+  );
+}
+
+function AdminDashboardInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [authState, setAuthState] = useState<"checking" | "unauthenticated" | "unauthorized" | "authorized">(
     "checking"
   );
   const [role, setRole] = useState<"admin" | "staff" | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("enquiries");
+  const validTabs: Tab[] = [
+    "enquiries",
+    "farmers",
+    "buyers",
+    "suppliers",
+    "cooperatives",
+    "followups",
+    "reporting",
+    "content",
+    "value-chains",
+    "solutions",
+    "insights",
+    "staff",
+  ];
+  const tabFromQuery = searchParams.get("tab");
+  const initialTab: Tab = validTabs.includes(tabFromQuery as Tab) ? (tabFromQuery as Tab) : "enquiries";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [loading, setLoading] = useState(false);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [farmers, setFarmers] = useState<Farmer[]>([]);

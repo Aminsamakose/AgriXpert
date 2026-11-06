@@ -85,6 +85,7 @@ export default function BuyerRegistrationForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subject: `New buyer sourcing request: ${companyName}`,
+        entityType: "buyer",
         replyTo: email,
         fields: [
           { label: "Company Name", value: companyName },

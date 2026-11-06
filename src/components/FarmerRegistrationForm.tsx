@@ -86,6 +86,7 @@ export default function FarmerRegistrationForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subject: `New farmer registration: ${fullName}`,
+        entityType: "farmer",
         replyTo: email || undefined,
         fields: [
           { label: "Full Name", value: fullName },

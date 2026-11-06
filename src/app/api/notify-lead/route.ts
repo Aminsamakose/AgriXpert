@@ -1,28 +1,56 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { readFile } from "fs/promises";
+import path from "path";
 import { contactEmail } from "@/lib/site-data";
+import { renderLeadNotificationEmail, type EmailField } from "@/lib/email-template";
 
-type LeadField = { label: string; value: string };
+type EntityType = "farmer" | "buyer" | "supplier" | "cooperative" | "enquiry";
 
 type LeadPayload = {
   subject: string;
+  entityType?: EntityType;
   replyTo?: string;
-  fields: LeadField[];
+  fields: EmailField[];
 };
 
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+const presentation: Record<EntityType, { badge: string; heading: string; intro: string; adminTab: string }> = {
+  farmer: {
+    badge: "FARMER",
+    heading: "New Farmer Registration",
+    intro: "A farmer just registered on the AgriXpert platform and is awaiting verification.",
+    adminTab: "farmers",
+  },
+  buyer: {
+    badge: "BUYER",
+    heading: "New Buyer Sourcing Request",
+    intro: "A buyer submitted a sourcing request and is awaiting verification.",
+    adminTab: "buyers",
+  },
+  supplier: {
+    badge: "SUPPLIER",
+    heading: "New Supplier / Partner Registration",
+    intro: "A supplier or service partner just registered and is awaiting verification.",
+    adminTab: "suppliers",
+  },
+  cooperative: {
+    badge: "COOPERATIVE",
+    heading: "New Cooperative Registration",
+    intro: "A cooperative lead just registered and is awaiting verification.",
+    adminTab: "cooperatives",
+  },
+  enquiry: {
+    badge: "ENQUIRY",
+    heading: "New Website Enquiry",
+    intro: "Someone submitted an enquiry through the AgriXpert contact form.",
+    adminTab: "enquiries",
+  },
+};
 
 /**
  * Sends an email notification for a new lead (contact enquiry, farmer,
- * buyer or supplier registration) over plain SMTP, using our own mailbox
- * rather than a third-party email API.
+ * buyer, supplier or cooperative registration) over plain SMTP, using our
+ * own mailbox rather than a third-party email API.
  *
  * This is intentionally best-effort: the lead has already been saved to its
  * Supabase table by the time this route is called, so missing SMTP config
@@ -35,10 +63,10 @@ function escapeHtml(value: string) {
  * them, this route responds 200 and does nothing, so every form keeps
  * working either way.
  *
- * For a Google Workspace mailbox (samakose.com's current MX): SMTP_HOST=
- * smtp.gmail.com, SMTP_PORT=465, SMTP_USER=the sending address, SMTP_PASS=
- * an app password generated for that account (Google Account > Security >
- * App passwords; requires 2-Step Verification to be on).
+ * For a Google Workspace / Gmail mailbox: SMTP_HOST=smtp.gmail.com,
+ * SMTP_PORT=465, SMTP_USER=the sending address, SMTP_PASS=an app password
+ * generated for that account (Google Account > Security > App passwords;
+ * requires 2-Step Verification to be on).
  */
 export async function POST(request: Request) {
   let payload: LeadPayload;
@@ -48,7 +76,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Invalid request body" }, { status: 400 });
   }
 
-  const { subject, replyTo, fields } = payload;
+  const { subject, entityType, replyTo, fields } = payload;
   if (!subject || !Array.isArray(fields) || fields.length === 0) {
     return NextResponse.json({ ok: false, error: "Missing required fields" }, { status: 400 });
   }
@@ -66,15 +94,21 @@ export async function POST(request: Request) {
 
   const notifyEmail = process.env.NOTIFY_EMAIL || contactEmail;
   const fromAddress = process.env.NOTIFY_FROM_EMAIL || user;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://agri-xpert.vercel.app";
 
-  const rowsHtml = fields
-    .map(
-      (f) =>
-        `<p><strong>${escapeHtml(f.label)}:</strong> ${escapeHtml(f.value).replace(/\n/g, "<br />")}</p>`
-    )
-    .join("");
+  const preset = entityType ? presentation[entityType] : undefined;
+
+  const html = renderLeadNotificationEmail({
+    heading: preset?.heading ?? subject,
+    intro: preset?.intro,
+    badgeLabel: preset?.badge ?? "NOTIFICATION",
+    fields,
+    adminUrl: `${siteUrl}/admin${preset ? `?tab=${preset.adminTab}` : ""}`,
+  });
 
   try {
+    const logoBuffer = await readFile(path.join(process.cwd(), "public", "logo.png"));
+
     const transporter = nodemailer.createTransport({
       host,
       port: Number(port),
@@ -87,11 +121,14 @@ export async function POST(request: Request) {
       to: notifyEmail,
       ...(replyTo ? { replyTo } : {}),
       subject,
-      html: `
-        ${rowsHtml}
-        <hr />
-        <p style="color:#888;font-size:12px;">Sent automatically from the AgriXpert website. This submission is also saved in the admin dashboard.</p>
-      `,
+      html,
+      attachments: [
+        {
+          filename: "logo.png",
+          content: logoBuffer,
+          cid: "agrixpert-logo",
+        },
+      ],
     });
 
     return NextResponse.json({ ok: true, sent: true });

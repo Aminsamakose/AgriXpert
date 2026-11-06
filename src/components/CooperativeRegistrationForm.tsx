@@ -85,6 +85,7 @@ export default function CooperativeRegistrationForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subject: `New cooperative registration: ${name}`,
+        entityType: "cooperative",
         replyTo: email,
         fields: [
           { label: "Cooperative Name", value: name },

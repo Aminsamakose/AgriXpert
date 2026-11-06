@@ -81,6 +81,7 @@ export default function SupplierRegistrationForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subject: `New supplier/partner registration: ${companyName}`,
+        entityType: "supplier",
         replyTo: email,
         fields: [
           { label: "Company Name", value: companyName },

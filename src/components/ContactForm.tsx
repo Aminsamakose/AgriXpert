@@ -57,6 +57,7 @@ export default function ContactForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subject: `New ${enquiryType} enquiry from ${name}`,
+        entityType: "enquiry",
         replyTo: email,
         fields: [
           { label: "Name", value: name },
