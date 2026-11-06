@@ -87,6 +87,7 @@ export default function CooperativeRegistrationForm() {
         subject: `New cooperative registration: ${name}`,
         entityType: "cooperative",
         replyTo: email,
+        submitterName: leadContactName || name,
         fields: [
           { label: "Cooperative Name", value: name },
           { label: "Lead Contact Name", value: leadContactName },

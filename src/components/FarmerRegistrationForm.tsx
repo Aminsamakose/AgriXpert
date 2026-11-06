@@ -88,6 +88,7 @@ export default function FarmerRegistrationForm() {
         subject: `New farmer registration: ${fullName}`,
         entityType: "farmer",
         replyTo: email || undefined,
+        submitterName: fullName,
         fields: [
           { label: "Full Name", value: fullName },
           { label: "Phone", value: phone },

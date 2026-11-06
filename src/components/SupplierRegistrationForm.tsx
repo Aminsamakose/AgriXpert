@@ -83,6 +83,7 @@ export default function SupplierRegistrationForm() {
         subject: `New supplier/partner registration: ${companyName}`,
         entityType: "supplier",
         replyTo: email,
+        submitterName: contactName || companyName,
         fields: [
           { label: "Company Name", value: companyName },
           { label: "Contact Name", value: contactName },

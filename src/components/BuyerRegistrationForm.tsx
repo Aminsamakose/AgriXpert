@@ -87,6 +87,7 @@ export default function BuyerRegistrationForm() {
         subject: `New buyer sourcing request: ${companyName}`,
         entityType: "buyer",
         replyTo: email,
+        submitterName: contactName || companyName,
         fields: [
           { label: "Company Name", value: companyName },
           { label: "Contact Name", value: contactName },

@@ -59,6 +59,7 @@ export default function ContactForm() {
         subject: `New ${enquiryType} enquiry from ${name}`,
         entityType: "enquiry",
         replyTo: email,
+        submitterName: name,
         fields: [
           { label: "Name", value: name },
           { label: "Email", value: email },

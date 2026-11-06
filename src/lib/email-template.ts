@@ -31,22 +31,7 @@ function escapeHtml(value: string) {
 
 export type EmailField = { label: string; value: string };
 
-export function renderLeadNotificationEmail({
-  heading,
-  intro,
-  fields,
-  badgeLabel,
-  adminUrl,
-}: {
-  /** e.g. "New Farmer Registration" */
-  heading: string;
-  /** one-line context sentence under the heading */
-  intro?: string;
-  fields: EmailField[];
-  /** short category pill, e.g. "FARMER", "BUYER", "ENQUIRY" */
-  badgeLabel: string;
-  adminUrl?: string;
-}) {
+function fieldTable(fields: EmailField[]) {
   const rowsHtml = fields
     .map(
       (f, i) => `
@@ -65,6 +50,28 @@ export function renderLeadNotificationEmail({
     )
     .join("");
 
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.border};border-radius:8px;overflow:hidden;">${rowsHtml}</table>`;
+}
+
+function badgePill(label: string, color: string) {
+  return `<span style="display:inline-block;background-color:${color}1A;color:${color};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;">
+    ${escapeHtml(label)}
+  </span>`;
+}
+
+function ctaButton(label: string, url: string, color: string) {
+  return `<a href="${url}" style="display:inline-block;background-color:${color};color:${BRAND.white};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:10px 20px;border-radius:999px;">
+    ${escapeHtml(label)} →
+  </a>`;
+}
+
+/**
+ * Wraps a block of body content (badge, heading, whatever comes next) in the
+ * shared card shell: logo header, white card, footer tagline. Callers build
+ * their own body HTML and pass it in — this just keeps the outer chrome
+ * (and therefore the brand look) identical across every email we send.
+ */
+function shell(bodyHtml: string, footerNote: string) {
   return `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background-color:${BRAND.bg};font-family:Arial,Helvetica,sans-serif;">
@@ -80,45 +87,13 @@ export function renderLeadNotificationEmail({
               </td>
             </tr>
 
-            <!-- Badge + heading -->
-            <tr>
-              <td style="padding:28px 28px 8px 28px;">
-                <span style="display:inline-block;background-color:${BRAND.harvestGold}1A;color:${BRAND.harvestGold};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;">
-                  ${escapeHtml(badgeLabel)}
-                </span>
-                <h1 style="margin:14px 0 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;color:${BRAND.forestDark};">
-                  ${escapeHtml(heading)}
-                </h1>
-                ${intro ? `<p style="margin:8px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};line-height:1.5;">${escapeHtml(intro)}</p>` : ""}
-              </td>
-            </tr>
-
-            <!-- Field table -->
-            <tr>
-              <td style="padding:16px 28px 8px 28px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.border};border-radius:8px;overflow:hidden;">
-                  ${rowsHtml}
-                </table>
-              </td>
-            </tr>
-
-            ${
-              adminUrl
-                ? `<tr>
-              <td style="padding:20px 28px 4px 28px;">
-                <a href="${adminUrl}" style="display:inline-block;background-color:${BRAND.agriGreen};color:${BRAND.white};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:10px 20px;border-radius:999px;">
-                  Open in Admin Dashboard →
-                </a>
-              </td>
-            </tr>`
-                : ""
-            }
+            ${bodyHtml}
 
             <!-- Footer -->
             <tr>
               <td style="padding:24px 28px 28px 28px;">
                 <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${BRAND.muted};line-height:1.6;">
-                  Sent automatically by the AgriXpert platform. This record is already saved and visible in the admin dashboard regardless of this email.
+                  ${footerNote}
                 </p>
               </td>
             </tr>
@@ -131,4 +106,140 @@ export function renderLeadNotificationEmail({
     </table>
   </body>
 </html>`;
+}
+
+/**
+ * Internal, admin-facing notification: "a new X came in", with the full
+ * submitted field set and a deep link into the admin dashboard.
+ */
+export function renderLeadNotificationEmail({
+  heading,
+  intro,
+  fields,
+  badgeLabel,
+  adminUrl,
+}: {
+  /** e.g. "New Farmer Registration" */
+  heading: string;
+  /** one-line context sentence under the heading */
+  intro?: string;
+  fields: EmailField[];
+  /** short category pill, e.g. "FARMER", "BUYER", "ENQUIRY" */
+  badgeLabel: string;
+  adminUrl?: string;
+}) {
+  const body = `
+    <tr>
+      <td style="padding:28px 28px 8px 28px;">
+        ${badgePill(badgeLabel, BRAND.harvestGold)}
+        <h1 style="margin:14px 0 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;color:${BRAND.forestDark};">
+          ${escapeHtml(heading)}
+        </h1>
+        ${intro ? `<p style="margin:8px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};line-height:1.5;">${escapeHtml(intro)}</p>` : ""}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:16px 28px 8px 28px;">
+        ${fieldTable(fields)}
+      </td>
+    </tr>
+    ${
+      adminUrl
+        ? `<tr>
+      <td style="padding:20px 28px 4px 28px;">
+        ${ctaButton("Open in Admin Dashboard", adminUrl, BRAND.agriGreen)}
+      </td>
+    </tr>`
+        : ""
+    }
+  `;
+
+  return shell(
+    body,
+    "Sent automatically by the AgriXpert platform. This record is already saved and visible in the admin dashboard regardless of this email."
+  );
+}
+
+/**
+ * Submitter-facing confirmation: "we got it, here's what happens next",
+ * sent back to the farmer/buyer/supplier/cooperative/enquirer's own email
+ * address right after they submit a form.
+ */
+export function renderConfirmationEmail({
+  name,
+  heading,
+  bodyMessage,
+  nextSteps,
+  fields,
+  badgeLabel,
+}: {
+  /** the submitter's name or company name, for a personal greeting */
+  name: string;
+  /** e.g. "Thanks for registering with AgriXpert" */
+  heading: string;
+  /** 1-2 sentence explanation of what happens next */
+  bodyMessage: string;
+  /** short bullet list of next steps, e.g. verification timeline */
+  nextSteps?: string[];
+  /** a condensed copy of what they submitted, for their own records */
+  fields: EmailField[];
+  badgeLabel: string;
+}) {
+  const nextStepsHtml =
+    nextSteps && nextSteps.length > 0
+      ? `<tr>
+          <td style="padding:4px 28px 8px 28px;">
+            <p style="margin:0 0 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:${BRAND.muted};">
+              What happens next
+            </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              ${nextSteps
+                .map(
+                  (step, i) => `
+                <tr>
+                  <td style="padding:6px 0;vertical-align:top;width:28px;">
+                    <span style="display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;background-color:${BRAND.agriGreen}1A;color:${BRAND.agriGreen};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;">
+                      ${i + 1}
+                    </span>
+                  </td>
+                  <td style="padding:6px 0;vertical-align:top;">
+                    <span style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};line-height:1.5;">
+                      ${escapeHtml(step)}
+                    </span>
+                  </td>
+                </tr>`
+                )
+                .join("")}
+            </table>
+          </td>
+        </tr>`
+      : "";
+
+  const body = `
+    <tr>
+      <td style="padding:28px 28px 8px 28px;">
+        ${badgePill(badgeLabel, BRAND.agriGreen)}
+        <h1 style="margin:14px 0 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;color:${BRAND.forestDark};">
+          ${escapeHtml(heading)}
+        </h1>
+        <p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:${BRAND.ink};line-height:1.6;">
+          Hi ${escapeHtml(name)}, ${escapeHtml(bodyMessage)}
+        </p>
+      </td>
+    </tr>
+    ${nextStepsHtml}
+    <tr>
+      <td style="padding:16px 28px 8px 28px;">
+        <p style="margin:0 0 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:${BRAND.muted};">
+          What you submitted
+        </p>
+        ${fieldTable(fields)}
+      </td>
+    </tr>
+  `;
+
+  return shell(
+    body,
+    "This is an automated confirmation — no need to reply. If something above looks wrong, just reply to this email and our team will help."
+  );
 }
