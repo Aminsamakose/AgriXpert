@@ -310,9 +310,55 @@ function AdminDashboardInner() {
 
   const [verifying, setVerifying] = useState<string | null>(null);
 
+  function contactForEntity(entityType: VerifiableEntity, id: string): { name: string; email: string } | null {
+    if (entityType === "farmer") {
+      const row = farmers.find((r) => r.id === id);
+      return row?.email ? { name: row.full_name, email: row.email } : null;
+    }
+    if (entityType === "buyer") {
+      const row = buyers.find((r) => r.id === id);
+      return row?.email ? { name: row.contact_name, email: row.email } : null;
+    }
+    if (entityType === "supplier") {
+      const row = suppliers.find((r) => r.id === id);
+      return row?.email ? { name: row.contact_name, email: row.email } : null;
+    }
+    const row = cooperatives.find((r) => r.id === id);
+    return row?.email ? { name: row.lead_contact_name, email: row.email } : null;
+  }
+
+  function notifyVerificationDecision(
+    entityType: VerifiableEntity,
+    contact: { name: string; email: string },
+    decision: "verified" | "rejected"
+  ) {
+    const entityLabel = { farmer: "farmer", buyer: "buyer", supplier: "supplier", cooperative: "cooperative" }[
+      entityType
+    ];
+    const isVerified = decision === "verified";
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: contact.email,
+        subject: isVerified ? "You're verified on AgriXpert" : "Update on your AgriXpert registration",
+        name: contact.name,
+        badgeLabel: isVerified ? "VERIFIED" : "NOT APPROVED",
+        badgeColor: isVerified ? "agriGreen" : "red",
+        heading: isVerified ? "You're verified!" : "Update on your registration",
+        message: isVerified
+          ? `your ${entityLabel} account has been verified. You now have full access to the AgriXpert marketplace.`
+          : `after review, we were unable to verify your ${entityLabel} registration at this time. If you have questions or would like to update your details and resubmit, just reply to this email.`,
+        ctaLabel: isVerified ? "Open AgriXpert" : undefined,
+        ctaUrl: isVerified ? (process.env.NEXT_PUBLIC_SITE_URL || "https://agri-xpert.vercel.app") + "/marketplace" : undefined,
+      }),
+    }).catch(() => {});
+  }
+
   async function decide(entityType: VerifiableEntity, id: string, decision: "verified" | "rejected" | "pending") {
     setVerifying(id);
     setError(null);
+    const contact = decision === "pending" ? null : contactForEntity(entityType, id);
     const { error: rpcError } = await supabase.rpc("verify_entity", {
       p_entity_type: entityType,
       p_entity_id: id,
@@ -322,6 +368,9 @@ function AdminDashboardInner() {
     if (rpcError) {
       setError(rpcError.message);
       return;
+    }
+    if (contact && (decision === "verified" || decision === "rejected")) {
+      notifyVerificationDecision(entityType, contact, decision);
     }
     loadTab(
       entityType === "farmer"
@@ -356,10 +405,17 @@ function AdminDashboardInner() {
       setError(rpcError.message);
       return;
     }
-    const failures = (data as { entity_id: string; ok: boolean; error: string | null }[] | null)?.filter((r) => !r.ok) ?? [];
+    const results = (data as { entity_id: string; ok: boolean; error: string | null }[] | null) ?? [];
+    const failures = results.filter((r) => !r.ok);
     if (failures.length > 0) {
       setError(`${failures.length} of ${selectedIds.size} record(s) failed: ${failures[0].error}`);
     }
+    results
+      .filter((r) => r.ok)
+      .forEach((r) => {
+        const contact = contactForEntity(entityType, r.entity_id);
+        if (contact) notifyVerificationDecision(entityType, contact, decision);
+      });
     setSelectedIds(new Set());
     loadTab(
       entityType === "farmer"

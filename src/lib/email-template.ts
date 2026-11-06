@@ -243,3 +243,64 @@ export function renderConfirmationEmail({
     "This is an automated confirmation — no need to reply. If something above looks wrong, just reply to this email and our team will help."
   );
 }
+
+/**
+ * Generic single-message notice: a badge, a heading, a short message, and
+ * an optional CTA button. Used for anything that doesn't need a field
+ * table — verification outcomes, marketplace activity (interest expressed,
+ * booking requested), cooperative membership changes, and similar one-line
+ * events.
+ */
+export function renderNoticeEmail({
+  name,
+  badgeLabel,
+  badgeColor = "agriGreen",
+  heading,
+  message,
+  ctaLabel,
+  ctaUrl,
+  footerNote,
+}: {
+  /** the recipient's name, for a personal greeting */
+  name: string;
+  badgeLabel: string;
+  /** which brand color the badge uses */
+  badgeColor?: "agriGreen" | "harvestGold" | "forest" | "red";
+  heading: string;
+  /** full sentence(s); greeting ("Hi Name,") is NOT prepended automatically here */
+  message: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  footerNote?: string;
+}) {
+  const colorMap = { agriGreen: BRAND.agriGreen, harvestGold: BRAND.harvestGold, forest: BRAND.forest, red: "#C0392B" };
+  const color = colorMap[badgeColor];
+
+  const body = `
+    <tr>
+      <td style="padding:28px 28px 8px 28px;">
+        ${badgePill(badgeLabel, color)}
+        <h1 style="margin:14px 0 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;color:${BRAND.forestDark};">
+          ${escapeHtml(heading)}
+        </h1>
+        <p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:${BRAND.ink};line-height:1.6;">
+          Hi ${escapeHtml(name)}, ${escapeHtml(message)}
+        </p>
+      </td>
+    </tr>
+    ${
+      ctaLabel && ctaUrl
+        ? `<tr>
+      <td style="padding:20px 28px 16px 28px;">
+        ${ctaButton(ctaLabel, ctaUrl, BRAND.agriGreen)}
+      </td>
+    </tr>`
+        : `<tr><td style="padding:8px;"></td></tr>`
+    }
+  `;
+
+  return shell(
+    body,
+    footerNote ?? "This is an automated notification from the AgriXpert platform."
+  );
+}

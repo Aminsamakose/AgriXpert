@@ -461,6 +461,27 @@ export default function MarketplacePage() {
     loadData();
   }
 
+  async function notifyListingOwner(listingId: string, eventHeading: string, eventMessage: string) {
+    const { data } = await supabase.rpc("get_listing_owner_contact", { p_listing_id: listingId });
+    const owner = (data as { name: string; email: string }[] | null)?.[0];
+    if (!owner?.email) return;
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: owner.email,
+        subject: `${eventHeading} — AgriXpert`,
+        name: owner.name,
+        badgeLabel: "MARKETPLACE",
+        badgeColor: "harvestGold",
+        heading: eventHeading,
+        message: eventMessage,
+        ctaLabel: "Open Marketplace",
+        ctaUrl: (process.env.NEXT_PUBLIC_SITE_URL || "https://agri-xpert.vercel.app") + "/marketplace",
+      }),
+    }).catch(() => {});
+  }
+
   async function handleExpressInterest(form: HTMLFormElement, listingId: string) {
     if (!identity) return;
     setExpressing(true);
@@ -478,6 +499,14 @@ export default function MarketplacePage() {
       setExpressError(error.message);
       return;
     }
+    const listing = listings.find((l) => l.id === listingId);
+    notifyListingOwner(
+      listingId,
+      "New interest in your listing",
+      `${email ?? "Someone"} expressed interest in your ${listing?.commodity ?? "listing"} listing${
+        qtyRaw ? ` (requesting ${qtyRaw}${listing?.unit ? ` ${listing.unit}` : ""})` : ""
+      }. Sign in to the marketplace to respond.`
+    );
     setExpressingFor(null);
     loadData();
   }
@@ -530,6 +559,17 @@ export default function MarketplacePage() {
     if (error) {
       setBookingError(error.message);
       return;
+    }
+    const listingId =
+      kind === "equipment"
+        ? Object.values(equipmentByListing).find((e) => e.id === id)?.listing_id
+        : Object.values(storageByListing).find((s) => s.id === id)?.listing_id;
+    if (listingId) {
+      notifyListingOwner(
+        listingId,
+        kind === "equipment" ? "New equipment booking request" : "New storage booking request",
+        `${email ?? "Someone"} requested to book your ${kind} listing from ${startDate} to ${endDate}. Sign in to the marketplace to confirm or decline.`
+      );
     }
     setBookingFor(null);
     loadData();
