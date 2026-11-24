@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import PageHero from "@/components/PageHero";
-import EmailMagicLinkForm from "@/components/EmailMagicLinkForm";
+import PortalSignInForm from "@/components/PortalSignInForm";
 import { supabase } from "@/lib/supabase";
 import { stockImages, valueChains } from "@/lib/site-data";
 
@@ -268,6 +268,28 @@ export default function PortalPage() {
   const [editingSection, setEditingSection] = useState<"farmer" | "buyer" | "supplier" | "cooperative" | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordStatus, setPasswordStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  async function handleSetPassword() {
+    if (newPassword.length < 8) {
+      setPasswordStatus("error");
+      setPasswordError("Password must be at least 8 characters.");
+      return;
+    }
+    setPasswordStatus("saving");
+    setPasswordError(null);
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    if (updateError) {
+      setPasswordStatus("error");
+      setPasswordError(updateError.message);
+      return;
+    }
+    setPasswordStatus("saved");
+    setNewPassword("");
+  }
 
   const checkSession = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
@@ -471,7 +493,7 @@ export default function PortalPage() {
         <div className="mt-8">
           {authState === "checking" && <p className="text-sm text-forest-dark/60">Checking sign-in status…</p>}
 
-          {authState === "signedOut" && <EmailMagicLinkForm redirectPath="/portal" buttonLabel="Sign In to Portal" />}
+          {authState === "signedOut" && <PortalSignInForm redirectPath="/portal" buttonLabel="Sign In to Portal" />}
 
           {authState === "signedIn" && (
             <div>
@@ -479,13 +501,57 @@ export default function PortalPage() {
                 <p className="text-sm text-forest-dark/70">
                   Signed in as <span className="font-semibold text-forest-dark">{email}</span>
                 </p>
-                <button
-                  onClick={handleSignOut}
-                  className="rounded-full border border-forest/20 px-4 py-2 text-sm font-semibold text-forest-dark hover:bg-forest/5"
-                >
-                  Sign Out
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowPasswordForm((v) => !v)}
+                    className="rounded-full border border-forest/20 px-4 py-2 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+                  >
+                    {showPasswordForm ? "Close" : "Set Password"}
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="rounded-full border border-forest/20 px-4 py-2 text-sm font-semibold text-forest-dark hover:bg-forest/5"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
+
+              {showPasswordForm && (
+                <div className="mt-4 max-w-md rounded-2xl border border-forest/10 bg-white p-5 shadow-sm">
+                  <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-harvest-gold">
+                    Set a password for this account
+                  </h2>
+                  <p className="mt-2 text-xs text-forest-dark/60">
+                    Once set, you can sign in with your email and this password instead of waiting for
+                    an email link each time.
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="New password (min. 8 characters)"
+                      className="flex-1 rounded-lg border border-forest/20 px-3 py-2 text-sm"
+                    />
+                    <button
+                      onClick={handleSetPassword}
+                      disabled={passwordStatus === "saving"}
+                      className="rounded-full bg-forest px-5 py-2 text-sm font-semibold text-natural-white hover:bg-forest-dark disabled:opacity-40"
+                    >
+                      {passwordStatus === "saving" ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                  {passwordStatus === "saved" && (
+                    <p className="mt-2 text-xs font-semibold text-agri-green">
+                      Password set. You can now sign in with it from the Portal.
+                    </p>
+                  )}
+                  {passwordStatus === "error" && passwordError && (
+                    <p className="mt-2 text-xs font-semibold text-red-600">{passwordError}</p>
+                  )}
+                </div>
+              )}
 
               {isAdmin ? (
                 <p className="mt-6 rounded-2xl border border-harvest-gold/20 bg-harvest-gold/5 p-5 text-sm text-forest-dark/70">

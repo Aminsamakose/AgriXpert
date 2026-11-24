@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import PageHero from "@/components/PageHero";
-import EmailMagicLinkForm from "@/components/EmailMagicLinkForm";
+import PortalSignInForm from "@/components/PortalSignInForm";
 import { supabase } from "@/lib/supabase";
 import { stockImages, valueChains } from "@/lib/site-data";
 
@@ -647,7 +647,7 @@ export default function MarketplacePage() {
               </a>{" "}
               to browse and post marketplace listings.
             </p>
-            <EmailMagicLinkForm redirectPath="/marketplace" buttonLabel="Sign In to Marketplace" />
+            <PortalSignInForm redirectPath="/marketplace" buttonLabel="Sign In to Marketplace" />
           </div>
         )}
 
