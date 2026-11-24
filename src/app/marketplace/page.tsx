@@ -25,6 +25,8 @@ type Listing = {
   price_indication: string | null;
   quality_grade: string | null;
   location_label: string | null;
+  latitude: number | null;
+  longitude: number | null;
   availability_start: string | null;
   availability_end: string | null;
   status: ListingStatus;
@@ -255,7 +257,7 @@ export default function MarketplacePage() {
     const { data: listingRows } = await supabase
       .from("listings")
       .select(
-        "id, created_at, actor_id, actor_type, listing_type, commodity, quantity, unit, price_indication, quality_grade, location_label, availability_start, availability_end, status"
+        "id, created_at, actor_id, actor_type, listing_type, commodity, quantity, unit, price_indication, quality_grade, location_label, latitude, longitude, availability_start, availability_end, status"
       )
       .order("created_at", { ascending: false })
       .limit(100);
@@ -402,6 +404,10 @@ export default function MarketplacePage() {
     const fd = new FormData(form);
     const quantityRaw = String(fd.get("quantity") ?? "").trim();
     const serviceKind = String(fd.get("serviceKind") ?? "none");
+    const latRaw = String(fd.get("latitude") ?? "").trim();
+    const lngRaw = String(fd.get("longitude") ?? "").trim();
+    const latitude = latRaw ? Number(latRaw) : null;
+    const longitude = lngRaw ? Number(lngRaw) : null;
     const { data: inserted, error } = await supabase
       .from("listings")
       .insert({
@@ -414,6 +420,8 @@ export default function MarketplacePage() {
         price_indication: String(fd.get("priceIndication") ?? "") || null,
         quality_grade: String(fd.get("qualityGrade") ?? "") || null,
         location_label: String(fd.get("locationLabel") ?? "") || null,
+        latitude,
+        longitude,
       })
       .select("id")
       .single();
@@ -447,6 +455,8 @@ export default function MarketplacePage() {
           ? compatRaw.split(",").map((c) => c.trim()).filter(Boolean)
           : [],
         location_label: String(fd.get("locationLabel") ?? "") || null,
+        latitude,
+        longitude,
       });
       if (storageError) {
         setPosting(false);
@@ -735,6 +745,20 @@ export default function MarketplacePage() {
                           </p>
                           <p className="text-xs text-forest-dark/60">
                             {l.price_indication ?? ""} {l.location_label ? `· ${l.location_label}` : ""}
+                            {l.latitude != null && l.longitude != null && (
+                              <>
+                                {" "}
+                                ·{" "}
+                                <a
+                                  href={`https://www.google.com/maps?q=${l.latitude},${l.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-semibold text-forest underline hover:text-forest-dark"
+                                >
+                                  View on map
+                                </a>
+                              </>
+                            )}
                           </p>
                         </div>
                         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(l.status)}`}>
@@ -1186,6 +1210,20 @@ export default function MarketplacePage() {
                             </p>
                             <p className="text-xs text-forest-dark/60">
                               {l.price_indication ?? ""} {l.location_label ? `· ${l.location_label}` : ""}
+                            {l.latitude != null && l.longitude != null && (
+                              <>
+                                {" "}
+                                ·{" "}
+                                <a
+                                  href={`https://www.google.com/maps?q=${l.latitude},${l.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-semibold text-forest underline hover:text-forest-dark"
+                                >
+                                  View on map
+                                </a>
+                              </>
+                            )}
                               {l.quality_grade ? ` · Grade: ${l.quality_grade}` : ""}
                             </p>
                             {equip && (
@@ -1293,6 +1331,24 @@ function PostListingForm({
   const defaultType: ListingType = actorType === "buyer" ? "demand" : actorType === "supplier" ? "service" : "supply";
   const [listingType, setListingType] = useState<ListingType>(defaultType);
   const [serviceKind, setServiceKind] = useState<"none" | "equipment" | "storage">("none");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "error">("idle");
+
+  function useMyLocation() {
+    if (!("geolocation" in navigator)) {
+      setGeoStatus("error");
+      return;
+    }
+    setGeoStatus("locating");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoStatus("idle");
+      },
+      () => setGeoStatus("error"),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
 
   return (
     <form
@@ -1418,6 +1474,31 @@ function PostListingForm({
         <div className="sm:col-span-2">
           <label className="text-sm font-medium text-forest-dark">Location</label>
           <input name="locationLabel" placeholder="e.g. Tamale, Northern Region" className="mt-1 w-full rounded-lg border border-forest/20 px-3 py-2 text-sm" />
+          <input type="hidden" name="latitude" value={coords?.lat ?? ""} />
+          <input type="hidden" name="longitude" value={coords?.lng ?? ""} />
+          <div className="mt-2 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={useMyLocation}
+              disabled={geoStatus === "locating"}
+              className="rounded-full border border-forest/20 px-3 py-1.5 text-xs font-semibold text-forest-dark hover:bg-forest/5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {geoStatus === "locating" ? "Getting location…" : coords ? "Update pinned GPS location" : "Pin my current GPS location"}
+            </button>
+            {coords && (
+              <span className="text-xs text-forest-dark/60">
+                Pinned: {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+              </span>
+            )}
+            {geoStatus === "error" && (
+              <span className="text-xs font-medium text-red-600">
+                Couldn&apos;t get your location — you can still post with the text label above.
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-forest-dark/50">
+            Optional. Pinning a GPS location lets buyers see exactly where this {serviceKind === "equipment" ? "equipment" : "listing"} is on a map, in addition to the text description above.
+          </p>
         </div>
       </div>
       {postError && <p className="text-sm font-medium text-red-600">{postError}</p>}
